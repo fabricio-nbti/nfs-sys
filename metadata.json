@@ -1,0 +1,5 @@
+{
+  "name": "NFeSys - Sistema de Gestão e Emissão Fiscal",
+  "description": "Uma aplicação web completa para gerenciamento de negócios, incluindo Ponto de Venda (PDV), controle de produtos, clientes, empresas, contas a pagar e receber, e um dashboard analítico. Simula a emissão de notas fiscais (NFe, NFCe, MEI).",
+  "requestFramePermissions": []
+}

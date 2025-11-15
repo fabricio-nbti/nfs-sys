@@ -1,4 +1,4 @@
-import { type Product, type Customer, type Company, type Invoice, type AccountTransaction, InvoiceStatus, type ServiceOrder, ServiceOrderStatus } from './types';
+import { type Product, type Customer, type Company, type Invoice, type AccountTransaction, InvoiceStatus, type ServiceOrder, ServiceOrderStatus, type User } from './types';
 
 export const MOCK_PRODUCTS: Product[] = [
   { id: '1', name: 'Notebook Gamer Pro', price: 7500, stock: 15, category: 'Eletrônicos', sku: 'NTB-GMR-001' },
@@ -15,7 +15,9 @@ export const MOCK_CUSTOMERS: Customer[] = [
 ];
 
 export const MOCK_COMPANIES: Company[] = [
-  { id: '1', name: 'Minha Empresa MEI', legalName: 'Minha Empresa de Tecnologia MEI', document: '99.888.777/0001-66', address: 'Rua Principal, 123, Centro, São Paulo, SP - 01001-000', stateRegistration: '111.222.333.444' }
+  { id: '1', name: 'Minha Empresa MEI', legalName: 'Minha Empresa de Tecnologia MEI', document: '99.888.777/0001-66', address: 'Rua Principal, 123, Centro, São Paulo, SP - 01001-000', stateRegistration: '111.222.333.444' },
+  { id: '2', name: 'Oficina do Zé', legalName: 'José Auto Peças Ltda', document: '11.222.333/0001-44', address: 'Av. das Nações, 200, Campinas, SP - 13010-000', stateRegistration: '555.666.777.888' },
+  { id: '3', name: 'Solar Energy Solutions', legalName: 'Solar Energy Instalações Ltda', document: '44.555.666/0001-22', address: 'Rua do Sol, 999, Recife, PE - 50030-000', stateRegistration: '999.888.777.666' }
 ];
 
 const mockIssuer = MOCK_COMPANIES[0];
@@ -147,4 +149,115 @@ export const CATEGORY_DATA = [
     { name: 'Periféricos', value: 300 },
     { name: 'Monitores', value: 200 },
     { name: 'Móveis', value: 100 },
+];
+
+export const MOCK_USERS: User[] = [
+  {
+    id: 'user-1',
+    name: 'Admin Geral',
+    email: 'admin@nfesys.com',
+    role: 'Admin',
+    companyId: undefined, // Admin geral não pertence a nenhuma empresa específica
+    permissions: {
+      dashboard: true,
+      pdv: true,
+      invoiceIssuing: true,
+      invoices: true,
+      serviceOrders: true,
+      electronicsServiceOrders: true,
+      automotiveServiceOrders: true,
+      securityServiceOrders: true,
+      solarEnergyServiceOrders: true,
+      itConsultingServiceOrders: true,
+      products: true,
+      customers: true,
+      companies: true,
+      accountsPayable: true,
+      accountsReceivable: true,
+      shopeeCalc: true,
+      settings: true,
+      userManagement: true,
+    }
+  },
+  {
+    id: 'user-2',
+    name: 'Vendedor da Minha Empresa',
+    email: 'vendedor@minhaempresa.com',
+    role: 'Operador',
+    companyId: '1',
+    permissions: {
+      dashboard: true,
+      pdv: true,
+      invoiceIssuing: false,
+      invoices: false,
+      serviceOrders: false,
+      electronicsServiceOrders: false,
+      automotiveServiceOrders: false,
+      securityServiceOrders: false,
+      solarEnergyServiceOrders: false,
+      itConsultingServiceOrders: false,
+      products: true,
+      customers: true,
+      companies: false,
+      accountsPayable: false,
+      accountsReceivable: false,
+      shopeeCalc: false,
+      settings: false,
+      userManagement: false,
+    }
+  },
+   {
+    id: 'user-3',
+    name: 'José Mecânico',
+    email: 'jose@oficina.com',
+    role: 'Operador',
+    companyId: '2',
+    permissions: {
+      dashboard: true,
+      pdv: false,
+      invoiceIssuing: true,
+      invoices: true,
+      serviceOrders: false,
+      electronicsServiceOrders: false,
+      automotiveServiceOrders: true,
+      securityServiceOrders: false,
+      solarEnergyServiceOrders: false,
+      itConsultingServiceOrders: false,
+      products: true,
+      customers: true,
+      companies: false,
+      accountsPayable: true,
+      accountsReceivable: true,
+      shopeeCalc: false,
+      settings: false,
+      userManagement: false,
+    }
+  },
+  {
+    id: 'user-4',
+    name: 'Técnico da Minha Empresa',
+    email: 'tecnico@minhaempresa.com',
+    role: 'Operador',
+    companyId: '1',
+    permissions: {
+      dashboard: true,
+      pdv: false,
+      invoiceIssuing: true,
+      invoices: true,
+      serviceOrders: true,
+      electronicsServiceOrders: true,
+      automotiveServiceOrders: false,
+      securityServiceOrders: false,
+      solarEnergyServiceOrders: false,
+      itConsultingServiceOrders: true,
+      products: true,
+      customers: true,
+      companies: false,
+      accountsPayable: false,
+      accountsReceivable: false,
+      shopeeCalc: false,
+      settings: false,
+      userManagement: false,
+    }
+  }
 ];

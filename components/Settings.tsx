@@ -1,36 +1,11 @@
 import React from 'react';
 import { type AppSettings } from '../types';
+import ToggleSwitch from './shared/ToggleSwitch';
 
 interface SettingsProps {
   settings: AppSettings;
   setSettings: (settings: AppSettings) => void;
 }
-
-const ToggleSwitch: React.FC<{
-  label: string;
-  enabled: boolean;
-  onChange: (enabled: boolean) => void;
-}> = ({ label, enabled, onChange }) => {
-  return (
-    <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg border">
-      <span className="font-medium text-gray-700">{label}</span>
-      <button
-        type="button"
-        className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${
-          enabled ? 'bg-primary' : 'bg-gray-300'
-        }`}
-        onClick={() => onChange(!enabled)}
-      >
-        <span
-          className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${
-            enabled ? 'translate-x-6' : 'translate-x-1'
-          }`}
-        />
-      </button>
-    </div>
-  );
-};
-
 
 const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
   const handleToggle = (key: keyof AppSettings) => {
@@ -43,46 +18,53 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
 
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">
-          Visibilidade das Páginas
+          Visibilidade dos Módulos
         </h2>
         <p className="text-sm text-gray-500 mb-6">
-          Controle quais módulos aparecerão na barra de navegação lateral.
+          Controle quais módulos aparecerão na barra de navegação lateral para todos os usuários.
         </p>
         <div className="space-y-4">
           <ToggleSwitch
             label="Página de Emissão de Notas"
             enabled={settings.showInvoiceIssuing}
             onChange={() => handleToggle('showInvoiceIssuing')}
+            labelClassName="text-base"
           />
           <ToggleSwitch
             label="O.S. - Celulares & Notebooks"
             enabled={settings.showMobileRepair}
             onChange={() => handleToggle('showMobileRepair')}
+            labelClassName="text-base"
           />
           <ToggleSwitch
             label="O.S. - Eletrônicos"
             enabled={settings.showElectronicsRepair}
             onChange={() => handleToggle('showElectronicsRepair')}
+            labelClassName="text-base"
           />
            <ToggleSwitch
             label="O.S. - Automotivo"
             enabled={settings.showAutomotiveRepair}
             onChange={() => handleToggle('showAutomotiveRepair')}
+            labelClassName="text-base"
           />
           <ToggleSwitch
             label="O.S. - Segurança Eletrônica"
             enabled={settings.showSecuritySystems}
             onChange={() => handleToggle('showSecuritySystems')}
+            labelClassName="text-base"
           />
           <ToggleSwitch
             label="O.S. - Energia Solar"
             enabled={settings.showSolarEnergy}
             onChange={() => handleToggle('showSolarEnergy')}
+            labelClassName="text-base"
           />
            <ToggleSwitch
             label="O.S. - Consultoria TI"
             enabled={settings.showITConsulting}
             onChange={() => handleToggle('showITConsulting')}
+            labelClassName="text-base"
           />
         </div>
       </div>

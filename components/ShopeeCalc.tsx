@@ -1,96 +1,98 @@
 import React, { useState, useCallback } from 'react';
 import { Calculator } from 'lucide-react';
 
-const CalculatorCard: React.FC<{ title: string, children: React.ReactNode }> = ({ title, children }) => (
-    <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">{title}</h2>
-        {children}
-    </div>
-);
-
 const ShopeeCalc: React.FC = () => {
-    // State for Seller Packages
-    const [sellerPackages, setSellerPackages] = useState<number | ''>('');
-    const [sellerResult, setSellerResult] = useState<{ total: number; breakdown: string } | null>(null);
+    // Unified state for inputs
+    const [inputs, setInputs] = useState({
+        sellerPackages: '' as number | '',
+        returnPackages: '' as number | '',
+        pickupReceived: '' as number | '',
+        pickupDelivered: '' as number | '',
+        excellenceLevel: 'none',
+    });
 
-    // State for Return Packages
-    const [returnPackages, setReturnPackages] = useState<number | ''>('');
-    const [returnResult, setReturnResult] = useState<{ total: number; breakdown: string } | null>(null);
+    // Unified state for results
+    const [result, setResult] = useState<{
+        sellerTotal: number;
+        returnTotal: number;
+        pickupTotal: number;
+        subtotal: number;
+        bonusLevel: string;
+        bonusPercentage: number;
+        bonusAmount: number;
+        grandTotal: number;
+    } | null>(null);
 
-    // State for Pickup Packages
-    const [pickupReceived, setPickupReceived] = useState<number | ''>('');
-    const [pickupDelivered, setPickupDelivered] = useState<number | ''>('');
-    const [pickupResult, setPickupResult] = useState<{ total: number; breakdownReceived: string; breakdownDelivered: string; totalReceived: number; totalDelivered: number; } | null>(null);
+    const excellencePrograms = {
+        none: { label: 'Nenhum', percentage: 0 },
+        bronze: { label: 'Bronze', percentage: 0.01 },
+        prata: { label: 'Prata', percentage: 0.025 },
+        ouro: { label: 'Ouro', percentage: 0.035 },
+        platina: { label: 'Platina', percentage: 0.05 },
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setInputs(prev => ({
+            ...prev,
+            [name]: e.target.type === 'number' ? (value === '' ? '' : Number(value)) : value
+        }));
+    };
 
     const calculateTieredPackages = useCallback((quantity: number) => {
         if (quantity <= 0) return { total: 0, breakdown: "N/A" };
         let totalCost = 0;
         let remaining = quantity;
-        const breakdownParts: string[] = [];
 
         const tiers = [
             { limit: 500, price: 0.70 },
-            { limit: 500, price: 0.60 },    // 501 to 1000
-            { limit: 4000, price: 0.50 },   // 1001 to 5000
-            { limit: 5000, price: 0.40 },   // 5001 to 10000
-            { limit: 5000, price: 0.30 },   // 10001 to 15000
-            { limit: Infinity, price: 0.20 },// 15001+
+            { limit: 500, price: 0.60 },
+            { limit: 4000, price: 0.50 },
+            { limit: 5000, price: 0.40 },
+            { limit: 5000, price: 0.30 },
+            { limit: Infinity, price: 0.20 },
         ];
 
         for (const tier of tiers) {
             if (remaining <= 0) break;
-            
             const packagesInTier = Math.min(remaining, tier.limit);
-            const costInTier = packagesInTier * tier.price;
-            totalCost += costInTier;
+            totalCost += packagesInTier * tier.price;
             remaining -= packagesInTier;
-            
-            if (packagesInTier > 0) {
-              breakdownParts.push(`(${packagesInTier} x R$${tier.price.toFixed(2)})`);
-            }
         }
         
-        return { total: totalCost, breakdown: breakdownParts.join(' + ') };
+        return { total: totalCost };
     }, []);
     
-    const handleCalculateSeller = () => {
-        const quantity = Number(sellerPackages);
-        if (quantity <= 0) {
-            setSellerResult(null);
-            return;
-        }
-        setSellerResult(calculateTieredPackages(quantity));
-    };
+    const handleCalculate = () => {
+        const { sellerPackages, returnPackages, pickupReceived, pickupDelivered, excellenceLevel } = inputs;
 
-    const handleCalculateReturn = () => {
-        const quantity = Number(returnPackages);
-        if (quantity <= 0) {
-            setReturnResult(null);
-            return;
-        }
-        const total = quantity * 0.80;
-        const breakdown = `${quantity} x R$0,80`;
-        setReturnResult({ total, breakdown });
-    };
-    
-    const handleCalculatePickup = () => {
-        const receivedQty = Number(pickupReceived);
-        const deliveredQty = Number(pickupDelivered);
+        const sellerQty = Number(sellerPackages) || 0;
+        const returnQty = Number(returnPackages) || 0;
+        const receivedQty = Number(pickupReceived) || 0;
+        const deliveredQty = Number(pickupDelivered) || 0;
 
-        if (receivedQty <= 0 && deliveredQty <= 0) {
-            setPickupResult(null);
-            return;
-        }
-
+        const sellerCalc = calculateTieredPackages(sellerQty);
+        const returnTotal = returnQty * 0.80;
         const receivedCalc = calculateTieredPackages(receivedQty);
         const deliveredCalc = calculateTieredPackages(deliveredQty);
-        
-        setPickupResult({
-            total: receivedCalc.total + deliveredCalc.total,
-            totalReceived: receivedCalc.total,
-            totalDelivered: deliveredCalc.total,
-            breakdownReceived: receivedCalc.breakdown,
-            breakdownDelivered: deliveredCalc.breakdown,
+        const pickupTotal = receivedCalc.total + deliveredCalc.total;
+
+        const subtotal = sellerCalc.total + returnTotal + pickupTotal;
+
+        const programKey = excellenceLevel as keyof typeof excellencePrograms;
+        const program = excellencePrograms[programKey] || excellencePrograms.none;
+        const bonusAmount = subtotal * program.percentage;
+        const grandTotal = subtotal + bonusAmount;
+
+        setResult({
+            sellerTotal: sellerCalc.total,
+            returnTotal,
+            pickupTotal,
+            subtotal,
+            bonusLevel: program.label,
+            bonusPercentage: program.percentage * 100,
+            bonusAmount,
+            grandTotal,
         });
     };
 
@@ -98,105 +100,123 @@ const ShopeeCalc: React.FC = () => {
         <div>
             <h1 className="text-3xl font-bold text-gray-800 mb-6">Calculadora de Comissões - Agência Shopee</h1>
 
-            {/* Seller Packages Calculator */}
-            <CalculatorCard title="Pacotes de Vendedores (Envios)">
-                <div className="mb-4 space-y-2 text-sm text-gray-600">
-                    <p><strong>Faixa A:</strong> 0 a 500 pacotes - R$ 0,70</p>
-                    <p><strong>Faixa B:</strong> 501 a 1.000 pacotes - R$ 0,60</p>
-                    <p><strong>Faixa C:</strong> 1.001 a 5.000 pacotes - R$ 0,50</p>
-                    <p><strong>Faixa D:</strong> 5.001 a 10.000 pacotes - R$ 0,40</p>
-                    <p><strong>Faixa E:</strong> 10.001 a 15.000 pacotes - R$ 0,30</p>
-                    <p><strong>Faixa F:</strong> Acima de 15.001 pacotes - R$ 0,20</p>
-                    <p className="text-xs italic">* O cálculo é cumulativo por faixa.</p>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    {/* Inputs */}
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-700 mb-3">Valores Base</h3>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600">Pacotes de Vendedores (Envios)</label>
+                                <input 
+                                    type="number"
+                                    name="sellerPackages"
+                                    value={inputs.sellerPackages}
+                                    onChange={handleInputChange}
+                                    placeholder="Qtd."
+                                    className="mt-1 p-2 border rounded-md w-full"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600">Pacotes de Devolução (R$ 0,80/un)</label>
+                                <input 
+                                    type="number"
+                                    name="returnPackages"
+                                    value={inputs.returnPackages}
+                                    onChange={handleInputChange}
+                                    placeholder="Qtd."
+                                    className="mt-1 p-2 border rounded-md w-full"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600">Pacotes de Retirada (Recebidos)</label>
+                                <input 
+                                    type="number"
+                                    name="pickupReceived"
+                                    value={inputs.pickupReceived}
+                                    onChange={handleInputChange}
+                                    placeholder="Qtd. recebida do vendedor"
+                                    className="mt-1 p-2 border rounded-md w-full"
+                                />
+                            </div>
+                             <div>
+                                <label className="block text-sm font-medium text-gray-600">Pacotes de Retirada (Entregues)</label>
+                                <input 
+                                    type="number"
+                                    name="pickupDelivered"
+                                    value={inputs.pickupDelivered}
+                                    onChange={handleInputChange}
+                                    placeholder="Qtd. entregue ao comprador"
+                                    className="mt-1 p-2 border rounded-md w-full"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Bonus and Action */}
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-700 mb-3">Bônus</h3>
+                         <div className="space-y-4">
+                             <div>
+                                <label className="block text-sm font-medium text-gray-600">Programa de Excelência</label>
+                                <select 
+                                    name="excellenceLevel"
+                                    value={inputs.excellenceLevel}
+                                    onChange={handleInputChange}
+                                    className="mt-1 p-2 border rounded-md w-full bg-white"
+                                >
+                                    {Object.entries(excellencePrograms).map(([key, value]) => (
+                                        <option key={key} value={key}>{value.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                             <div className="pt-5">
+                                <button 
+                                    onClick={handleCalculate}
+                                    className="bg-primary w-full text-white px-4 py-3 rounded-lg flex items-center justify-center hover:bg-indigo-700 transition-colors font-semibold">
+                                    <Calculator size={20} className="mr-2"/>
+                                    Calcular Ganhos Totais
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div className="flex items-center gap-4">
-                    <input 
-                        type="number"
-                        value={sellerPackages}
-                        onChange={(e) => setSellerPackages(e.target.value === '' ? '' : Number(e.target.value))}
-                        placeholder="Qtd. de pacotes"
-                        className="p-2 border rounded-md w-48"
-                    />
-                    <button 
-                        onClick={handleCalculateSeller}
-                        className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors">
-                        <Calculator size={18} className="mr-2"/>
-                        Calcular
-                    </button>
-                </div>
-                {sellerResult && (
-                    <div className="mt-4 p-4 bg-indigo-50 rounded-lg">
-                        <p className="text-sm text-gray-700"><strong>Cálculo:</strong> {sellerResult.breakdown}</p>
-                        <p className="text-lg font-bold text-primary mt-2">Total: R$ {sellerResult.total.toFixed(2)}</p>
+
+                {/* Result Section */}
+                {result && (
+                    <div className="mt-8 pt-6 border-t">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Resultado do Cálculo</h2>
+                        <div className="bg-indigo-50 p-6 rounded-lg space-y-3">
+                            <div className="flex justify-between items-center text-gray-700">
+                                <span>Pacotes de Vendedores</span>
+                                <span className="font-medium">R$ {result.sellerTotal.toFixed(2)}</span>
+                            </div>
+                             <div className="flex justify-between items-center text-gray-700">
+                                <span>Pacotes de Devolução</span>
+                                <span className="font-medium">R$ {result.returnTotal.toFixed(2)}</span>
+                            </div>
+                             <div className="flex justify-between items-center text-gray-700">
+                                <span>Pacotes de Retirada</span>
+                                <span className="font-medium">R$ {result.pickupTotal.toFixed(2)}</span>
+                            </div>
+                            <hr className="my-2"/>
+                            <div className="flex justify-between items-center font-semibold text-gray-800">
+                                <span>Subtotal</span>
+                                <span>R$ {result.subtotal.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-green-600">
+                                <span>Bônus Excelência ({result.bonusLevel} - {result.bonusPercentage.toLocaleString('pt-BR')}%)</span>
+                                <span className="font-medium">+ R$ {result.bonusAmount.toFixed(2)}</span>
+                            </div>
+                             <hr className="my-2 border-dashed"/>
+                            <div className="flex justify-between items-center text-2xl font-bold text-primary">
+                                <span>Total Geral</span>
+                                <span>R$ {result.grandTotal.toFixed(2)}</span>
+                            </div>
+                        </div>
                     </div>
                 )}
-            </CalculatorCard>
-            
-            {/* Return Packages Calculator */}
-            <CalculatorCard title="Pacotes de Devolução">
-                 <div className="mb-4 space-y-2 text-sm text-gray-600">
-                    <p><strong>Valor Fixo:</strong> R$ 0,80 por pacote.</p>
-                 </div>
-                 <div className="flex items-center gap-4">
-                    <input 
-                        type="number"
-                        value={returnPackages}
-                        onChange={(e) => setReturnPackages(e.target.value === '' ? '' : Number(e.target.value))}
-                        placeholder="Qtd. de devoluções"
-                        className="p-2 border rounded-md w-48"
-                    />
-                    <button 
-                        onClick={handleCalculateReturn}
-                        className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors">
-                        <Calculator size={18} className="mr-2"/>
-                        Calcular
-                    </button>
-                 </div>
-                 {returnResult && (
-                    <div className="mt-4 p-4 bg-indigo-50 rounded-lg">
-                        <p className="text-sm text-gray-700"><strong>Cálculo:</strong> {returnResult.breakdown}</p>
-                        <p className="text-lg font-bold text-primary mt-2">Total: R$ {returnResult.total.toFixed(2)}</p>
-                    </div>
-                 )}
-            </CalculatorCard>
-
-            {/* Pickup Packages Calculator */}
-            <CalculatorCard title="Pacotes de Retirada (Coleta)">
-                <div className="mb-4 text-sm text-gray-600">
-                    <p>O cálculo por faixas (o mesmo de "Pacotes de Vendedores") é aplicado separadamente para pacotes recebidos e pacotes entregues.</p>
-                </div>
-                <div className="flex flex-col md:flex-row items-center gap-4">
-                    <input 
-                        type="number"
-                        value={pickupReceived}
-                        onChange={(e) => setPickupReceived(e.target.value === '' ? '' : Number(e.target.value))}
-                        placeholder="Qtd. recebida do vendedor"
-                        className="p-2 border rounded-md w-full md:w-60"
-                    />
-                    <input 
-                        type="number"
-                        value={pickupDelivered}
-                        onChange={(e) => setPickupDelivered(e.target.value === '' ? '' : Number(e.target.value))}
-                        placeholder="Qtd. entregue ao comprador"
-                        className="p-2 border rounded-md w-full md:w-60"
-                    />
-                    <button 
-                        onClick={handleCalculatePickup}
-                        className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors w-full md:w-auto">
-                        <Calculator size={18} className="mr-2"/>
-                        Calcular
-                    </button>
-                </div>
-                 {pickupResult && (
-                    <div className="mt-4 p-4 bg-indigo-50 rounded-lg space-y-3">
-                        <div>
-                            <p className="text-sm text-gray-700"><strong>Recebidos:</strong> {pickupResult.breakdownReceived} = <strong className="text-indigo-700">R$ {pickupResult.totalReceived.toFixed(2)}</strong></p>
-                            <p className="text-sm text-gray-700"><strong>Entregues:</strong> {pickupResult.breakdownDelivered} = <strong className="text-indigo-700">R$ {pickupResult.totalDelivered.toFixed(2)}</strong></p>
-                        </div>
-                        <p className="text-lg font-bold text-primary mt-2">Total Geral: R$ {pickupResult.total.toFixed(2)}</p>
-                    </div>
-                 )}
-            </CalculatorCard>
+            </div>
         </div>
     );
 }

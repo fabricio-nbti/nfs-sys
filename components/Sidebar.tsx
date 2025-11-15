@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { type Page, type AppSettings } from '../types';
-import { BarChart3, ShoppingCart, Receipt, Box, Users, Building, ArrowDownCircle, ArrowUpCircle, Menu, X, Wrench, Tv, Cog, Car, FileText, ShieldCheck, Sun, Network, Calculator } from 'lucide-react';
+import { BarChart3, ShoppingCart, Receipt, Box, Users, Building, ArrowDownCircle, ArrowUpCircle, Menu, X, Wrench, Tv, Cog, Car, FileText, ShieldCheck, Sun, Network, Calculator, UserCog } from 'lucide-react';
 
 interface SidebarProps {
   currentPage: Page;
@@ -41,7 +41,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings
     { icon: <Calculator size={20} />, label: 'Calculadora Shopee', page: 'shopee-calc' as Page, condition: true },
   ];
 
-  const settingsItem = { icon: <Cog size={20} />, label: 'Configurações', page: 'settings' as Page, condition: true };
+  const adminItems = [
+    { icon: <UserCog size={20} />, label: 'Usuários', page: 'user-management' as Page, condition: true },
+    { icon: <Cog size={20} />, label: 'Configurações', page: 'settings' as Page, condition: true }
+  ];
 
   const sidebarContent = (
     <div className={`bg-sidebar text-white flex flex-col h-full transition-width duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
@@ -59,7 +62,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings
         </ul>
         <ul>
             <hr className="border-t border-gray-700 my-2 mx-2"/>
-             <NavItem {...settingsItem} currentPage={currentPage} setCurrentPage={setCurrentPage} isCollapsed={isCollapsed} />
+             {adminItems.filter(item => item.condition).map(item => (
+                <NavItem key={item.page} {...item} currentPage={currentPage} setCurrentPage={setCurrentPage} isCollapsed={isCollapsed} />
+            ))}
         </ul>
       </nav>
     </div>

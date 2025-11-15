@@ -17,6 +17,7 @@ import ITConsultingServiceOrders from './components/ITConsultingServiceOrders';
 import Settings from './components/Settings';
 import InvoiceIssuing from './components/InvoiceIssuing';
 import ShopeeCalc from './components/ShopeeCalc';
+import UserManagement from './components/UserManagement';
 import { type Page, type AppSettings } from './types';
 
 const App: React.FC = () => {
@@ -65,6 +66,8 @@ const App: React.FC = () => {
         return <AccountsReceivable />;
       case 'shopee-calc':
         return <ShopeeCalc />;
+      case 'user-management':
+        return <UserManagement />;
       case 'settings':
         return <Settings settings={settings} setSettings={setSettings} />;
       default:

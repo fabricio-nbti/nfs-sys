@@ -1,4 +1,4 @@
-export type Page = 'dashboard' | 'pdv' | 'products' | 'customers' | 'invoices' | 'invoice-issuing' | 'companies' | 'accounts-payable' | 'accounts-receivable' | 'service-orders' | 'electronics-service-orders' | 'automotive-service-orders' | 'security-service-orders' | 'solar-energy-service-orders' | 'it-consulting-service-orders' | 'settings' | 'shopee-calc';
+export type Page = 'dashboard' | 'pdv' | 'products' | 'customers' | 'invoices' | 'invoice-issuing' | 'companies' | 'accounts-payable' | 'accounts-receivable' | 'service-orders' | 'electronics-service-orders' | 'automotive-service-orders' | 'security-service-orders' | 'solar-energy-service-orders' | 'it-consulting-service-orders' | 'settings' | 'shopee-calc' | 'user-management';
 
 export interface Product {
   id: string;
@@ -126,4 +126,34 @@ export interface AppSettings {
   showSecuritySystems: boolean;
   showSolarEnergy: boolean;
   showITConsulting: boolean;
+}
+
+export interface UserPermissions {
+  dashboard: boolean;
+  pdv: boolean;
+  invoiceIssuing: boolean;
+  invoices: boolean;
+  serviceOrders: boolean;
+  electronicsServiceOrders: boolean;
+  automotiveServiceOrders: boolean;
+  securityServiceOrders: boolean;
+  solarEnergyServiceOrders: boolean;
+  itConsultingServiceOrders: boolean;
+  products: boolean;
+  customers: boolean;
+  companies: boolean;
+  accountsPayable: boolean;
+  accountsReceivable: boolean;
+  shopeeCalc: boolean;
+  settings: boolean;
+  userManagement: boolean;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'Admin' | 'Operador';
+  permissions: UserPermissions;
+  companyId?: string;
 }

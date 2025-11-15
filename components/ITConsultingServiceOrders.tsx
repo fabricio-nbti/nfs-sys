@@ -2,13 +2,18 @@
 
 
 
+
+
+
+
 import React, { useState, useMemo } from 'react';
 import { MOCK_IT_CONSULTING_SERVICE_ORDERS, MOCK_COMPANIES } from '../constants';
-import { type ServiceOrder, ServiceOrderStatus } from '../types';
+import { type ServiceOrder, ServiceOrderStatus, type DamageMarker } from '../types';
 import { DataTable } from './shared/DataTable';
 import { Plus, Edit, Eye, Share2, ClipboardCopy, UploadCloud, Image as ImageIcon, Video, X, Trash2, Printer, Undo2 } from 'lucide-react';
 import Modal from './shared/Modal';
 import ServiceOrderReceiptView from './shared/ServiceOrderReceiptView';
+import WireframeAnnotator from './shared/WireframeAnnotator';
 
 
 const statusColorMap: Record<ServiceOrderStatus, string> = {
@@ -52,7 +57,7 @@ const ITConsultingServiceOrders: React.FC = () => {
 
   const openFormModal = (order: ServiceOrder | null = null) => {
     setSelectedOrder(order);
-    setCurrentOrder(order ? { ...order } : { status: ServiceOrderStatus.Pending });
+    setCurrentOrder(order ? { ...order } : { status: ServiceOrderStatus.Pending, damageMarkers: [] });
     setUploadedFiles([]);
     setIsFormModalOpen(true);
   };
@@ -89,6 +94,10 @@ const ITConsultingServiceOrders: React.FC = () => {
         }
         return updatedOrder;
     });
+  };
+  
+  const handleMarkersChange = (newMarkers: DamageMarker[]) => {
+    setCurrentOrder(prev => prev ? { ...prev, damageMarkers: newMarkers } : null);
   };
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -227,81 +236,109 @@ const ITConsultingServiceOrders: React.FC = () => {
       />
 
       {/* Form Modal (Create/Edit) */}
-      <Modal isOpen={isFormModalOpen} onClose={() => setIsFormModalOpen(false)} title={currentOrder?.id ? "Editar Ordem de Serviço" : "Criar Nova Ordem de Serviço"}>
+      <Modal isOpen={isFormModalOpen} onClose={() => setIsFormModalOpen(false)} title={currentOrder?.id ? "Editar Ordem de Serviço" : "Criar Nova Ordem de Serviço"} size="4xl">
         <form onSubmit={handleFormSubmit} className="max-h-[80vh] overflow-y-auto pr-2">
-            <h3 className="text-lg font-semibold mb-2 text-primary">Dados do Cliente</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <input type="text" name="customerName" placeholder="Nome da Empresa/Cliente" value={currentOrder?.customerName || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
-                <input type="tel" name="customerPhone" placeholder="Telefone de Contato" value={currentOrder?.customerPhone || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md"/>
-                <input type="email" name="customerEmail" placeholder="E-mail de Contato" value={currentOrder?.customerEmail || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md col-span-2"/>
-            </div>
-
-            <h3 className="text-lg font-semibold mb-2 text-primary">Dados do Atendimento</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <select name="deviceType" value={currentOrder?.deviceType || 'Suporte Técnico Remoto'} onChange={handleInputChange} className="p-2 w-full border rounded-md bg-white">
-                    <option>Suporte Técnico Remoto</option>
-                    <option>Manutenção de Servidor</option>
-                    <option>Gestão de Rede</option>
-                    <option>Backup em Nuvem</option>
-                    <option>Segurança da Informação</option>
-                    <option>Outro</option>
-                </select>
-                <input type="text" name="deviceBrand" placeholder="Sistema/Plataforma (ex: Windows Server, Azure)" value={currentOrder?.deviceBrand || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
-                <input type="text" name="deviceModel" placeholder="Equipamento Afetado (ex: Servidor Dell)" value={currentOrder?.deviceModel || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
-                <input type="text" name="imeiOrSerial" placeholder="Nº do Contrato ou Chamado" value={currentOrder?.imeiOrSerial || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md col-span-2"/>
-            </div>
-
-            <h3 className="text-lg font-semibold mb-2 text-primary">Serviço</h3>
-             <div className="grid grid-cols-1 gap-4 mb-4">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                {/* Left Column */}
+                <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Status</label>
-                      <select name="status" value={currentOrder?.status || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md bg-white mt-1">
-                          {Object.values(ServiceOrderStatus).map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
+                        <h3 className="text-lg font-semibold mb-2 text-primary">Dados do Cliente</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" name="customerName" placeholder="Nome da Empresa/Cliente" value={currentOrder?.customerName || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
+                            <input type="tel" name="customerPhone" placeholder="Telefone de Contato" value={currentOrder?.customerPhone || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md"/>
+                            <input type="email" name="customerEmail" placeholder="E-mail de Contato" value={currentOrder?.customerEmail || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md col-span-2"/>
+                        </div>
                     </div>
-                     {currentOrder?.status === ServiceOrderStatus.Completed ? (
-                       <div>
-                         <label className="block text-sm font-medium text-gray-700">Data de Conclusão</label>
-                         <input type="date" name="dataConclusao" value={currentOrder?.dataConclusao || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
-                       </div>
-                    ) : (
-                       <div>
-                         <label className="block text-sm font-medium text-gray-700">Previsão de Entrega</label>
-                         <input type="date" name="estimatedDeliveryDate" value={currentOrder?.estimatedDeliveryDate || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
-                       </div>
-                    )}
-                 </div>
-                <textarea name="reportedProblem" placeholder="Problema Relatado / Chamado" value={currentOrder?.reportedProblem || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md" required></textarea>
-                <textarea name="technicianNotes" placeholder="Solução Aplicada / Horas Trabalhadas" value={currentOrder?.technicianNotes || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md"></textarea>
-                <textarea name="partsUsed" placeholder="Licenças de Software / Hardware Utilizados" value={currentOrder?.partsUsed || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md"></textarea>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="md:col-span-1">
-                        <label className="block text-sm font-medium text-gray-700">Custo Serviço (R$)</label>
-                        <input type="number" name="serviceCost" step="0.01" placeholder="Ex: 150.00" value={currentOrder?.serviceCost || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
+                    
+                    <div>
+                        <h3 className="text-lg font-semibold mb-2 text-primary">Dados do Atendimento</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <select name="deviceType" value={currentOrder?.deviceType || 'Suporte Técnico Remoto'} onChange={handleInputChange} className="p-2 w-full border rounded-md bg-white">
+                                <option>Suporte Técnico Remoto</option>
+                                <option>Manutenção de Servidor</option>
+                                <option>Gestão de Rede</option>
+                                <option>Backup em Nuvem</option>
+                                <option>Segurança da Informação</option>
+                                <option>Outro</option>
+                            </select>
+                            <input type="text" name="deviceBrand" placeholder="Sistema/Plataforma (ex: Windows Server, Azure)" value={currentOrder?.deviceBrand || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
+                            <input type="text" name="deviceModel" placeholder="Equipamento Afetado (ex: Servidor Dell)" value={currentOrder?.deviceModel || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
+                            <input type="text" name="imeiOrSerial" placeholder="Nº do Contrato ou Chamado" value={currentOrder?.imeiOrSerial || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md col-span-2"/>
+                        </div>
                     </div>
-                    <div className="md:col-span-1">
-                        <label className="block text-sm font-medium text-gray-700">Custo Peças (R$)</label>
-                        <input type="number" name="partsCost" step="0.01" placeholder="Ex: 300.50" value={currentOrder?.partsCost || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
-                    </div>
-                     <div className="md:col-span-1">
-                        <label className="block text-sm font-medium text-gray-700">Garantia (meses)</label>
-                        <input type="number" name="warrantyMonths" placeholder="Ex: 3" value={currentOrder?.warrantyMonths || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
+
+                    <div>
+                        <h3 className="text-lg font-semibold mb-2 text-primary">Anexos (Logs, Prints)</h3>
+                        <label htmlFor="file-upload-it" className="w-full flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-md cursor-pointer hover:bg-gray-50">
+                            <UploadCloud className="w-8 h-8 text-gray-400"/>
+                            <span className="mt-2 text-sm text-gray-600">Clique para selecionar arquivos</span>
+                        </label>
+                        <input id="file-upload-it" type="file" multiple className="hidden" onChange={(e) => setUploadedFiles(Array.from(e.target.files || []))}/>
+                        {renderMediaPreview()}
                     </div>
                 </div>
-             </div>
 
-            <h3 className="text-lg font-semibold mb-2 text-primary">Anexos (Logs, Prints)</h3>
-            <div>
-                <label htmlFor="file-upload-it" className="w-full flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-md cursor-pointer hover:bg-gray-50">
-                    <UploadCloud className="w-8 h-8 text-gray-400"/>
-                    <span className="mt-2 text-sm text-gray-600">Clique para selecionar arquivos</span>
-                </label>
-                <input id="file-upload-it" type="file" multiple className="hidden" onChange={(e) => setUploadedFiles(Array.from(e.target.files || []))}/>
-                {renderMediaPreview()}
+                {/* Right Column */}
+                <div className="space-y-4">
+                     <div>
+                        <h3 className="text-lg font-semibold mb-2 text-primary">Diagrama de Infraestrutura/Problema</h3>
+                        <p className="text-sm text-gray-500 mb-2">Use o diagrama para ilustrar a topologia da rede, o local do problema, etc.</p>
+                        {currentOrder && (
+                        <WireframeAnnotator 
+                            deviceType={currentOrder.deviceType || 'Manutenção de Servidor'}
+                            markers={currentOrder.damageMarkers || []}
+                            onMarkersChange={handleMarkersChange}
+                            mode="edit"
+                        />
+                        )}
+                    </div>
+                </div>
+            </div>
+            
+            {/* Full Width Section */}
+            <div className="mt-6 border-t pt-4">
+                <h3 className="text-lg font-semibold mb-2 text-primary">Serviço e Valores</h3>
+                <div className="grid grid-cols-1 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                        <label className="block text-sm font-medium text-gray-700">Status</label>
+                        <select name="status" value={currentOrder?.status || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md bg-white mt-1">
+                            {Object.values(ServiceOrderStatus).map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                        </div>
+                        {currentOrder?.status === ServiceOrderStatus.Completed ? (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Data de Conclusão</label>
+                            <input type="date" name="dataConclusao" value={currentOrder?.dataConclusao || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
+                        </div>
+                        ) : (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Previsão de Entrega</label>
+                            <input type="date" name="estimatedDeliveryDate" value={currentOrder?.estimatedDeliveryDate || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
+                        </div>
+                        )}
+                    </div>
+                    <textarea name="reportedProblem" placeholder="Problema Relatado / Chamado" value={currentOrder?.reportedProblem || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md" required></textarea>
+                    <textarea name="technicianNotes" placeholder="Solução Aplicada / Horas Trabalhadas" value={currentOrder?.technicianNotes || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md"></textarea>
+                    <textarea name="partsUsed" placeholder="Licenças de Software / Hardware Utilizados" value={currentOrder?.partsUsed || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md"></textarea>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="md:col-span-1">
+                            <label className="block text-sm font-medium text-gray-700">Custo Serviço (R$)</label>
+                            <input type="number" name="serviceCost" step="0.01" placeholder="Ex: 150.00" value={currentOrder?.serviceCost || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
+                        </div>
+                        <div className="md:col-span-1">
+                            <label className="block text-sm font-medium text-gray-700">Custo Peças (R$)</label>
+                            <input type="number" name="partsCost" step="0.01" placeholder="Ex: 300.50" value={currentOrder?.partsCost || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
+                        </div>
+                        <div className="md:col-span-1">
+                            <label className="block text-sm font-medium text-gray-700">Garantia (meses)</label>
+                            <input type="number" name="warrantyMonths" placeholder="Ex: 3" value={currentOrder?.warrantyMonths || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div className="mt-6 flex justify-end sticky bottom-0 bg-white py-4">
+            <div className="mt-6 flex justify-end sticky bottom-0 bg-white py-4 -mx-6 px-6 border-t">
                 <button type="button" onClick={() => setIsFormModalOpen(false)} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg mr-2 hover:bg-gray-300">Cancelar</button>
                 <button type="submit" className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Salvar Ordem</button>
             </div>
@@ -321,6 +358,19 @@ const ITConsultingServiceOrders: React.FC = () => {
             {typeof selectedOrder.warrantyMonths === 'number' && <p><strong>Garantia:</strong> {selectedOrder.warrantyMonths > 0 ? `${selectedOrder.warrantyMonths} meses` : 'Sem garantia'}</p>}
             {selectedOrder.technicianNotes && <p><strong>Solução:</strong> {selectedOrder.technicianNotes}</p>}
             {selectedOrder.totalValue && <p><strong>Valor Total:</strong> R$ {selectedOrder.totalValue.toFixed(2)}</p>}
+            
+            {selectedOrder.damageMarkers && selectedOrder.damageMarkers.length > 0 && (
+                <div className="my-4">
+                    <h4 className="font-bold text-gray-800 mb-2">Diagrama de Avarias</h4>
+                     <WireframeAnnotator 
+                        deviceType={selectedOrder.deviceType}
+                        markers={selectedOrder.damageMarkers}
+                        onMarkersChange={() => {}} // No-op in view mode
+                        mode="view"
+                    />
+                </div>
+            )}
+
             {selectedOrder.mediaUrls && selectedOrder.mediaUrls.length > 0 && (
                 <div>
                     <strong>Anexos:</strong>

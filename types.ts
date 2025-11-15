@@ -93,6 +93,12 @@ export enum ServiceOrderStatus {
   Canceled = 'Cancelado',
 }
 
+export interface DamageMarker {
+  x: number; // percentage
+  y: number; // percentage
+  description: string;
+}
+
 export interface ServiceOrder {
   id: string;
   customerName: string;
@@ -118,6 +124,7 @@ export interface ServiceOrder {
   dataConclusao?: string;
   warrantyMonths?: number;
   estimatedDeliveryDate?: string;
+  damageMarkers?: DamageMarker[];
 }
 
 export interface AppSettings {

@@ -54,18 +54,20 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings
             <Menu size={24}/>
         </button>
       </div>
-      <nav className="flex-1 px-2 py-4 flex flex-col justify-between">
+      <nav className="flex-1 px-2 py-4 flex flex-col overflow-y-auto">
         <ul>
           {navItems.filter(item => item.condition).map(item => (
             <NavItem key={item.page} {...item} currentPage={currentPage} setCurrentPage={setCurrentPage} isCollapsed={isCollapsed} />
           ))}
         </ul>
-        <ul>
+        <div className="mt-auto">
             <hr className="border-t border-gray-700 my-2 mx-2"/>
+            <ul>
              {adminItems.filter(item => item.condition).map(item => (
                 <NavItem key={item.page} {...item} currentPage={currentPage} setCurrentPage={setCurrentPage} isCollapsed={isCollapsed} />
             ))}
-        </ul>
+            </ul>
+        </div>
       </nav>
     </div>
   );

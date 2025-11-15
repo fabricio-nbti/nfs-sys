@@ -24,6 +24,8 @@ const SecurityServiceOrders: React.FC = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [isReprintModalOpen, setIsReprintModalOpen] = useState(false);
+  const [orderToReprint, setOrderToReprint] = useState<ServiceOrder | null>(null);
   const [receiptOrderData, setReceiptOrderData] = useState<ServiceOrder | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<ServiceOrder | null>(null);
   const [currentOrder, setCurrentOrder] = useState<Partial<ServiceOrder> | null>(null);
@@ -62,6 +64,11 @@ const SecurityServiceOrders: React.FC = () => {
   const openLinkModal = (order: ServiceOrder) => {
     setSelectedOrder(order);
     setIsLinkModalOpen(true);
+  };
+
+  const openReprintModal = (order: ServiceOrder) => {
+    setOrderToReprint(order);
+    setIsReprintModalOpen(true);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -193,6 +200,7 @@ const SecurityServiceOrders: React.FC = () => {
             <button onClick={() => openViewModal(item)} className="text-blue-600 hover:text-blue-900" title="Visualizar"><Eye size={18} /></button>
             <button onClick={() => openFormModal(item)} className="text-yellow-600 hover:text-yellow-900" title="Editar"><Edit size={18} /></button>
             <button onClick={() => openLinkModal(item)} className="text-green-600 hover:text-green-900" title="Compartilhar"><Share2 size={18} /></button>
+            <button onClick={() => openReprintModal(item)} className="text-gray-600 hover:text-gray-900" title="Imprimir Comprovante"><Printer size={18} /></button>
           </div>
         )}
       />
@@ -324,6 +332,27 @@ const SecurityServiceOrders: React.FC = () => {
              </div>
              <div className="flex justify-between items-center p-4 border-t bg-white rounded-b-lg no-print">
                <button onClick={() => setIsReceiptModalOpen(false)} className="text-gray-600 hover:text-gray-900 font-semibold flex items-center gap-2">
+                    <X size={18} />
+                    Fechar
+               </button>
+               <button onClick={() => window.print()} className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors">
+                   <Printer size={18} className="mr-2" />
+                   Imprimir Comprovante
+               </button>
+             </div>
+           </div>
+         </div>
+      )}
+
+      {/* Reprint Receipt Modal */}
+      {isReprintModalOpen && orderToReprint && (
+         <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
+           <div className="bg-gray-100 rounded-lg shadow-xl w-full max-w-sm flex flex-col">
+             <div className="p-4 overflow-y-auto">
+                <ServiceOrderReceiptView order={orderToReprint} company={MOCK_COMPANIES[0]} />
+             </div>
+             <div className="flex justify-between items-center p-4 border-t bg-white rounded-b-lg no-print">
+               <button onClick={() => setIsReprintModalOpen(false)} className="text-gray-600 hover:text-gray-900 font-semibold flex items-center gap-2">
                     <X size={18} />
                     Fechar
                </button>

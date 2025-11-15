@@ -32,6 +32,7 @@ const UserManagement: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>(MOCK_COMPANIES);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
+  const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Partial<User> | null>(null);
   const [selection, setSelection] = useState<string[]>([]);
   const [companyFilter, setCompanyFilter] = useState<string>('all');
@@ -115,11 +116,17 @@ const UserManagement: React.FC = () => {
   };
 
   const handleBulkDelete = () => {
-    if (window.confirm(`Tem certeza que deseja excluir ${selection.length} usuário(s)?`)) {
-      setUsers(prev => prev.filter(u => !selection.includes(u.id)));
-      setSelection([]);
+    if (selection.length > 0) {
+      setIsConfirmDeleteModalOpen(true);
     }
   };
+
+  const confirmBulkDelete = () => {
+    setUsers(prev => prev.filter(u => !selection.includes(u.id)));
+    setSelection([]);
+    setIsConfirmDeleteModalOpen(false);
+  };
+
 
   return (
     <div>
@@ -248,6 +255,34 @@ const UserManagement: React.FC = () => {
             </div>
          </form>
        </Modal>
+
+      {/* Confirmation Delete Modal */}
+      <Modal isOpen={isConfirmDeleteModalOpen} onClose={() => setIsConfirmDeleteModalOpen(false)} title="Confirmar Exclusão em Massa">
+        <div>
+            <p className="text-gray-700">
+                Tem certeza que deseja excluir permanentemente <strong>{selection.length} usuário(s)</strong> selecionado(s)?
+            </p>
+            <p className="mt-2 text-sm font-semibold text-red-600">
+                Esta ação não poderá ser desfeita.
+            </p>
+        </div>
+        <div className="mt-6 flex justify-end space-x-2">
+            <button
+                type="button"
+                onClick={() => setIsConfirmDeleteModalOpen(false)}
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+            >
+                Cancelar
+            </button>
+            <button
+                type="button"
+                onClick={confirmBulkDelete}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            >
+                Excluir
+            </button>
+        </div>
+      </Modal>
     </div>
   );
 };

@@ -5,7 +5,7 @@ import React, { useState, useMemo } from 'react';
 import { MOCK_ELECTRONICS_SERVICE_ORDERS, MOCK_COMPANIES } from '../constants';
 import { type ServiceOrder, ServiceOrderStatus } from '../types';
 import { DataTable } from './shared/DataTable';
-import { Plus, Edit, Eye, Share2, ClipboardCopy, UploadCloud, Image as ImageIcon, Video, X, Trash2, Printer } from 'lucide-react';
+import { Plus, Edit, Eye, Share2, ClipboardCopy, UploadCloud, Image as ImageIcon, Video, X, Trash2, Printer, Undo2 } from 'lucide-react';
 import Modal from './shared/Modal';
 import ServiceOrderReceiptView from './shared/ServiceOrderReceiptView';
 
@@ -77,7 +77,7 @@ const ElectronicsServiceOrders: React.FC = () => {
         if (!prev) return null;
         
         let finalValue: any = value;
-        if (name === 'serviceCost' || name === 'partsCost') {
+        if (name === 'serviceCost' || name === 'partsCost' || name === 'warrantyMonths') {
             finalValue = value === '' ? undefined : parseFloat(value);
         }
 
@@ -135,6 +135,18 @@ const ElectronicsServiceOrders: React.FC = () => {
     if (window.confirm(`Tem certeza que deseja excluir ${selection.length} ordem(ns) de serviço?`)) {
       setServiceOrders(prev => prev.filter(os => !selection.includes(os.id)));
       setSelection([]);
+    }
+  };
+
+  const handleReopenOrder = (orderToReopen: ServiceOrder) => {
+    if (window.confirm(`Tem certeza que deseja reabrir a O.S. #${orderToReopen.id}? O status será alterado para 'Em Andamento' e a data de conclusão será removida.`)) {
+        setServiceOrders(prev => 
+            prev.map(os => 
+                os.id === orderToReopen.id 
+                ? { ...os, status: ServiceOrderStatus.InProgress, dataConclusao: undefined } 
+                : os
+            )
+        );
     }
   };
 
@@ -198,7 +210,15 @@ const ElectronicsServiceOrders: React.FC = () => {
         renderActions={(item) => (
           <div className="flex space-x-2">
             <button onClick={() => openViewModal(item)} className="text-blue-600 hover:text-blue-900" title="Visualizar"><Eye size={18} /></button>
-            <button onClick={() => openFormModal(item)} className="text-yellow-600 hover:text-yellow-900" title="Editar"><Edit size={18} /></button>
+            
+            {item.status !== ServiceOrderStatus.Completed && item.status !== ServiceOrderStatus.Canceled && (
+              <button onClick={() => openFormModal(item)} className="text-yellow-600 hover:text-yellow-900" title="Editar"><Edit size={18} /></button>
+            )}
+
+            {item.status === ServiceOrderStatus.Completed && (
+              <button onClick={() => handleReopenOrder(item)} className="text-purple-600 hover:text-purple-900" title="Reabrir O.S."><Undo2 size={18} /></button>
+            )}
+            
             <button onClick={() => openLinkModal(item)} className="text-green-600 hover:text-green-900" title="Compartilhar"><Share2 size={18} /></button>
             <button onClick={() => openReprintModal(item)} className="text-gray-600 hover:text-gray-900" title="Imprimir Comprovante"><Printer size={18} /></button>
           </div>
@@ -254,9 +274,19 @@ const ElectronicsServiceOrders: React.FC = () => {
                 <textarea name="reportedProblem" placeholder="Problema Relatado pelo Cliente" value={currentOrder?.reportedProblem || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md" required></textarea>
                 <textarea name="technicianNotes" placeholder="Observações do Técnico" value={currentOrder?.technicianNotes || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md"></textarea>
                 <textarea name="partsUsed" placeholder="Peças Utilizadas" value={currentOrder?.partsUsed || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md"></textarea>
-                <div className="flex gap-4">
-                    <input type="number" name="serviceCost" step="0.01" placeholder="Custo do Serviço (R$)" value={currentOrder?.serviceCost || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md"/>
-                    <input type="number" name="partsCost" step="0.01" placeholder="Custo das Peças (R$)" value={currentOrder?.partsCost || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md"/>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-1">
+                        <label className="block text-sm font-medium text-gray-700">Custo Serviço (R$)</label>
+                        <input type="number" name="serviceCost" step="0.01" placeholder="Ex: 150.00" value={currentOrder?.serviceCost || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
+                    </div>
+                    <div className="md:col-span-1">
+                        <label className="block text-sm font-medium text-gray-700">Custo Peças (R$)</label>
+                        <input type="number" name="partsCost" step="0.01" placeholder="Ex: 300.50" value={currentOrder?.partsCost || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
+                    </div>
+                     <div className="md:col-span-1">
+                        <label className="block text-sm font-medium text-gray-700">Garantia (meses)</label>
+                        <input type="number" name="warrantyMonths" placeholder="Ex: 3" value={currentOrder?.warrantyMonths || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
+                    </div>
                 </div>
              </div>
 
@@ -286,6 +316,7 @@ const ElectronicsServiceOrders: React.FC = () => {
             <p><strong>Problema Relatado:</strong> {selectedOrder.reportedProblem}</p>
             <p><strong>Status:</strong> <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColorMap[selectedOrder.status]}`}>{selectedOrder.status}</span></p>
             {selectedOrder.dataConclusao && <p><strong>Data de Conclusão:</strong> {new Date(selectedOrder.dataConclusao).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p>}
+            {typeof selectedOrder.warrantyMonths === 'number' && <p><strong>Garantia:</strong> {selectedOrder.warrantyMonths > 0 ? `${selectedOrder.warrantyMonths} meses` : 'Sem garantia'}</p>}
             {selectedOrder.technicianNotes && <p><strong>Notas do Técnico:</strong> {selectedOrder.technicianNotes}</p>}
             {selectedOrder.totalValue && <p><strong>Valor Total:</strong> R$ {selectedOrder.totalValue.toFixed(2)}</p>}
             {selectedOrder.mediaUrls && selectedOrder.mediaUrls.length > 0 && (

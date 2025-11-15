@@ -116,6 +116,7 @@ export interface ServiceOrder {
   publicLink?: string;
   year?: string; // Ano do veículo
   dataConclusao?: string;
+  warrantyMonths?: number;
   estimatedDeliveryDate?: string;
 }
 

@@ -15,6 +15,11 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
     const [customerName, setCustomerName] = useState('');
     const [customerDoc, setCustomerDoc] = useState('');
     const [items, setItems] = useState<InvoiceItem[]>([]);
+    
+    // State for NFSe specific fields
+    const [takerMunicipalRegistration, setTakerMunicipalRegistration] = useState('');
+    const [serviceCode, setServiceCode] = useState('14.01'); // Default for IT/repair services
+    const [serviceObservations, setServiceObservations] = useState('');
 
     const allServiceOrders = useMemo(() => {
         const orders: ServiceOrder[] = [];
@@ -36,6 +41,9 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
             setCustomerName('');
             setCustomerDoc('');
             setItems([]);
+            setTakerMunicipalRegistration('');
+            setServiceCode('14.01');
+            setServiceObservations('');
             return;
         };
         
@@ -44,6 +52,12 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
             setCustomerName(order.customerName);
             const customer = MOCK_CUSTOMERS.find(c => c.name === order.customerName);
             setCustomerDoc(customer?.document || '');
+
+            // Pre-fill NFSe specific fields from OS
+            const observations = `Serviço referente à O.S. ${order.id}. Problema relatado: ${order.reportedProblem}. Laudo técnico: ${order.technicianNotes || 'N/A'}.`;
+            setServiceObservations(observations);
+            setTakerMunicipalRegistration(''); // This info is not in our mock customer data
+            setServiceCode('14.01'); // Common code for repair services
 
             const newItems: InvoiceItem[] = [];
             if (order.serviceCost) {
@@ -67,7 +81,7 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
                     quantity: 1,
                     unitPrice: order.partsCost,
                     code: 'PEC-01',
-                    ncm: '85177099',
+                    ncm: '85177099', // Example NCM for parts
                     csosn: '102',
                     cfop: '5102',
                     unit: 'UN',
@@ -104,7 +118,7 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
     };
 
     const subtotal = useMemo(() => 
-        items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0),
+        items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0),
     [items]);
     
     const handleIssueInvoice = () => {
@@ -112,7 +126,13 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
             alert('Por favor, preencha os dados do cliente e adicione pelo menos um item.');
             return;
         }
-        alert(`Simulação de Emissão de ${invoiceType}:\nCliente: ${customerName}\nTotal: R$ ${subtotal.toFixed(2)}\n\nEm um ambiente real, a requisição para a API (nfe-sped) seria feita aqui.`);
+        let message = `Simulação de Emissão de ${invoiceType}:\nCliente: ${customerName}\nTotal: R$ ${subtotal.toFixed(2)}`;
+        if (invoiceType === 'NFSe') {
+            message += `\nCódigo Serviço: ${serviceCode}\nObs: ${serviceObservations}`;
+        }
+        message += `\n\nEm um ambiente real, a requisição para a API (nfe-sped) seria feita aqui.`;
+
+        alert(message);
         setSelectedOS('');
     };
 
@@ -162,14 +182,27 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700">Cliente</label>
+                            <label className="block text-sm font-medium text-gray-700">Cliente / Tomador do Serviço</label>
                             <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Nome do cliente" className="mt-1 p-2 w-full border rounded-md"/>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">CPF/CNPJ</label>
+                            <label className="block text-sm font-medium text-gray-700">CPF/CNPJ do Tomador</label>
                             <input type="text" value={customerDoc} onChange={e => setCustomerDoc(e.target.value)} placeholder="Documento" className="mt-1 p-2 w-full border rounded-md"/>
                         </div>
                     </div>
+
+                    {invoiceType === 'NFSe' && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Inscrição Municipal Tomador</label>
+                                <input type="text" value={takerMunicipalRegistration} onChange={e => setTakerMunicipalRegistration(e.target.value)} placeholder="Opcional" className="mt-1 p-2 w-full border rounded-md"/>
+                            </div>
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700">Código do Serviço (LC 116)</label>
+                                <input type="text" value={serviceCode} onChange={e => setServiceCode(e.target.value)} placeholder="Ex: 14.01" className="mt-1 p-2 w-full border rounded-md"/>
+                            </div>
+                        </div>
+                    )}
 
                     <h3 className="text-md font-semibold mb-2 text-gray-600">Itens da Nota</h3>
                     <div className="space-y-2 mb-4">
@@ -187,7 +220,7 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
                                     placeholder="Qtd." 
                                     className="col-span-2 p-2 border rounded-md text-sm"
                                     value={item.quantity}
-                                    onChange={(e) => handleItemChange(item.id, 'quantity', parseFloat(e.target.value))}
+                                    onChange={(e) => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)}
                                 />
                                 <input 
                                     type="number" 
@@ -195,7 +228,7 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
                                     placeholder="Valor Unit." 
                                     className="col-span-3 p-2 border rounded-md text-sm"
                                     value={item.unitPrice}
-                                     onChange={(e) => handleItemChange(item.id, 'unitPrice', parseFloat(e.target.value))}
+                                     onChange={(e) => handleItemChange(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
                                 />
                                 <button onClick={() => removeItem(item.id)} className="col-span-1 text-red-500 hover:text-red-700 justify-self-center">
                                     <Trash2 size={18} />
@@ -208,6 +241,19 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
                         <PlusCircle size={18} /> Adicionar Item
                     </button>
                     
+                     {invoiceType === 'NFSe' && (
+                        <div className="mt-4">
+                            <h3 className="text-md font-semibold mb-2 text-gray-600">Observações do Serviço</h3>
+                            <textarea 
+                                value={serviceObservations}
+                                onChange={e => setServiceObservations(e.target.value)}
+                                rows={3}
+                                placeholder="Detalhes sobre o serviço prestado, garantia, etc."
+                                className="w-full p-2 border rounded-md text-sm"
+                            />
+                        </div>
+                    )}
+
                     <div className="mt-6 flex justify-end items-center">
                         <span className="text-lg font-bold text-gray-800">Total: R$ {subtotal.toFixed(2)}</span>
                     </div>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MOCK_ACCOUNTS_PAYABLE } from '../constants';
 import { type AccountTransaction } from '../types';
@@ -14,6 +15,7 @@ const statusColorMap: Record<string, string> = {
 const AccountsPayable: React.FC = () => {
   const [transactions, setTransactions] = useState<AccountTransaction[]>(MOCK_ACCOUNTS_PAYABLE);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selection, setSelection] = useState<string[]>([]);
 
   const columns = [
     { header: 'Descrição', accessor: 'description' as keyof AccountTransaction },
@@ -45,6 +47,11 @@ const AccountsPayable: React.FC = () => {
     setIsModalOpen(false);
   };
 
+  const handleBulkMarkAsPaid = () => {
+    setTransactions(prev => prev.map(t => selection.includes(t.id) ? { ...t, status: 'Paid', paymentDate: new Date().toISOString().split('T')[0] } : t));
+    setSelection([]);
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -57,9 +64,26 @@ const AccountsPayable: React.FC = () => {
         </button>
       </div>
 
+      {selection.length > 0 && (
+        <div className="bg-indigo-100 border-l-4 border-indigo-500 text-indigo-700 p-4 mb-4 rounded-r-lg flex justify-between items-center">
+            <span>{selection.length} selecionado(s)</span>
+            <div>
+              <button
+                onClick={handleBulkMarkAsPaid}
+                className="bg-green-500 text-white px-3 py-1 rounded-md text-sm font-semibold hover:bg-green-600 flex items-center"
+              >
+                <CheckCircle size={16} className="mr-1" />
+                Marcar como Pago
+              </button>
+            </div>
+          </div>
+      )}
+
       <DataTable<AccountTransaction>
         columns={columns}
         data={transactions}
+        selection={selection}
+        onSelectionChange={setSelection}
         renderActions={(item) => (
           <div className="flex space-x-2">
             {item.status !== 'Paid' && <button className="text-green-600 hover:text-green-900"><CheckCircle size={18} /></button>}

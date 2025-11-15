@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2 } from 'lucide-react';
 
 const Companies: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>(MOCK_COMPANIES);
+  const [selection, setSelection] = useState<string[]>([]);
 
   const columns = [
     { header: 'Nome Fantasia', accessor: 'name' as keyof Company },
@@ -26,9 +27,12 @@ const Companies: React.FC = () => {
       </div>
       <p className="text-gray-600 mb-4">Gerencie as empresas emissoras de notas fiscais. É necessário configurar o certificado digital no backend para cada empresa.</p>
 
+      {/* FIX: Added missing selection and onSelectionChange props to fix type error. */}
       <DataTable<Company>
         columns={columns}
         data={companies}
+        selection={selection}
+        onSelectionChange={setSelection}
         renderActions={(item) => (
           <div className="flex space-x-2">
             <button className="text-yellow-600 hover:text-yellow-900"><Edit size={18} /></button>

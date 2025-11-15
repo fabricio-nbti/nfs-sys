@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2 } from 'lucide-react';
 
 const Customers: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
+  const [selection, setSelection] = useState<string[]>([]);
 
   const columns = [
     { header: 'Nome', accessor: 'name' as keyof Customer },
@@ -14,6 +15,13 @@ const Customers: React.FC = () => {
     { header: 'Telefone', accessor: 'phone' as keyof Customer },
     { header: 'CPF/CNPJ', accessor: 'document' as keyof Customer },
   ];
+
+  const handleBulkDelete = () => {
+    if (window.confirm(`Tem certeza que deseja excluir ${selection.length} cliente(s)?`)) {
+      setCustomers(prev => prev.filter(c => !selection.includes(c.id)));
+      setSelection([]);
+    }
+  };
 
   return (
     <div>
@@ -25,9 +33,26 @@ const Customers: React.FC = () => {
         </button>
       </div>
 
+      {selection.length > 0 && (
+         <div className="bg-indigo-100 border-l-4 border-indigo-500 text-indigo-700 p-4 mb-4 rounded-r-lg flex justify-between items-center">
+            <span>{selection.length} selecionado(s)</span>
+            <div>
+              <button
+                onClick={handleBulkDelete}
+                className="bg-red-500 text-white px-3 py-1 rounded-md text-sm font-semibold hover:bg-red-600 flex items-center"
+              >
+                <Trash2 size={16} className="mr-1" />
+                Excluir Selecionados
+              </button>
+            </div>
+          </div>
+      )}
+
       <DataTable<Customer>
         columns={columns}
         data={customers}
+        selection={selection}
+        onSelectionChange={setSelection}
         renderActions={(item) => (
           <div className="flex space-x-2">
             <button className="text-yellow-600 hover:text-yellow-900"><Edit size={18} /></button>

@@ -1,22 +1,31 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { MOCK_SERVICE_ORDERS, MOCK_ELECTRONICS_SERVICE_ORDERS, MOCK_AUTOMOTIVE_SERVICE_ORDERS, MOCK_CUSTOMERS } from '../constants';
-import { ServiceOrderStatus, type ServiceOrder, type InvoiceItem } from '../types';
+import { MOCK_SERVICE_ORDERS, MOCK_ELECTRONICS_SERVICE_ORDERS, MOCK_AUTOMOTIVE_SERVICE_ORDERS, MOCK_SECURITY_SERVICE_ORDERS, MOCK_SOLAR_ENERGY_SERVICE_ORDERS, MOCK_IT_CONSULTING_SERVICE_ORDERS, MOCK_CUSTOMERS } from '../constants';
+import { ServiceOrderStatus, type ServiceOrder, type InvoiceItem, type AppSettings } from '../types';
 import { PlusCircle, Trash2, FileText } from 'lucide-react';
 
 type InvoiceType = 'NFe' | 'NFSe' | 'NFCe';
 
-const InvoiceIssuing: React.FC = () => {
+interface InvoiceIssuingProps {
+  settings: AppSettings;
+}
+
+const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
     const [invoiceType, setInvoiceType] = useState<InvoiceType>('NFSe');
     const [selectedOS, setSelectedOS] = useState<string>('');
     const [customerName, setCustomerName] = useState('');
     const [customerDoc, setCustomerDoc] = useState('');
     const [items, setItems] = useState<InvoiceItem[]>([]);
 
-    const allServiceOrders = useMemo(() => [
-        ...MOCK_SERVICE_ORDERS,
-        ...MOCK_ELECTRONICS_SERVICE_ORDERS,
-        ...MOCK_AUTOMOTIVE_SERVICE_ORDERS
-    ], []);
+    const allServiceOrders = useMemo(() => {
+        const orders: ServiceOrder[] = [];
+        if (settings.showMobileRepair) orders.push(...MOCK_SERVICE_ORDERS);
+        if (settings.showElectronicsRepair) orders.push(...MOCK_ELECTRONICS_SERVICE_ORDERS);
+        if (settings.showAutomotiveRepair) orders.push(...MOCK_AUTOMOTIVE_SERVICE_ORDERS);
+        if (settings.showSecuritySystems) orders.push(...MOCK_SECURITY_SERVICE_ORDERS);
+        if (settings.showSolarEnergy) orders.push(...MOCK_SOLAR_ENERGY_SERVICE_ORDERS);
+        if (settings.showITConsulting) orders.push(...MOCK_IT_CONSULTING_SERVICE_ORDERS);
+        return orders;
+    }, [settings]);
 
     const completedServiceOrders = useMemo(() => 
         allServiceOrders.filter(os => os.status === ServiceOrderStatus.Completed),
@@ -38,13 +47,12 @@ const InvoiceIssuing: React.FC = () => {
 
             const newItems: InvoiceItem[] = [];
             if (order.serviceCost) {
-                // FIX: Added missing properties to conform to the InvoiceItem type.
                 newItems.push({
                     id: Date.now(),
                     description: `Mão de obra referente à OS ${order.id}`,
                     quantity: 1,
                     unitPrice: order.serviceCost,
-                    code: 'SERV',
+                    code: 'SERV-01',
                     ncm: '00',
                     csosn: '102',
                     cfop: '5933',
@@ -52,15 +60,14 @@ const InvoiceIssuing: React.FC = () => {
                     totalPrice: order.serviceCost,
                 });
             }
-            if (order.partsCost) {
-                // FIX: Added missing properties to conform to the InvoiceItem type.
+            if (order.partsCost && order.partsCost > 0) {
                 newItems.push({
                     id: Date.now() + 1,
-                    description: `Peças utilizadas na OS ${order.id} (${order.partsUsed || 'N/A'})`,
+                    description: `Peças utilizadas na OS ${order.id} (${order.partsUsed || 'Diversas'})`,
                     quantity: 1,
                     unitPrice: order.partsCost,
-                    code: 'PECAS',
-                    ncm: '00',
+                    code: 'PEC-01',
+                    ncm: '85177099',
                     csosn: '102',
                     cfop: '5102',
                     unit: 'UN',
@@ -77,7 +84,19 @@ const InvoiceIssuing: React.FC = () => {
     };
 
     const addItem = () => {
-        setItems(prev => [...prev, { id: Date.now(), description: '', quantity: 1, unitPrice: 0 } as InvoiceItem]);
+        const newItem: InvoiceItem = { 
+            id: Date.now(), 
+            description: '', 
+            quantity: 1, 
+            unitPrice: 0, 
+            totalPrice: 0,
+            code: 'PROD',
+            ncm: '00000000',
+            csosn: '102',
+            cfop: '5102',
+            unit: 'UN',
+        };
+        setItems(prev => [...prev, newItem]);
     };
 
     const removeItem = (id: number) => {
@@ -93,9 +112,7 @@ const InvoiceIssuing: React.FC = () => {
             alert('Por favor, preencha os dados do cliente e adicione pelo menos um item.');
             return;
         }
-        // Simulação de emissão
         alert(`Simulação de Emissão de ${invoiceType}:\nCliente: ${customerName}\nTotal: R$ ${subtotal.toFixed(2)}\n\nEm um ambiente real, a requisição para a API (nfe-sped) seria feita aqui.`);
-        // Reset form
         setSelectedOS('');
     };
 
@@ -115,7 +132,6 @@ const InvoiceIssuing: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-800 mb-6">Emissão de Notas</h1>
             
             <div className="bg-white p-6 rounded-lg shadow-md">
-                {/* Invoice Type Selection */}
                 <div className="mb-6">
                     <h2 className="text-lg font-semibold mb-2 text-gray-600">1. Escolha o Tipo de Documento</h2>
                     <div className="flex flex-wrap gap-2">
@@ -125,9 +141,8 @@ const InvoiceIssuing: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Data Source */}
                 <div className="mb-6">
-                     <h2 className="text-lg font-semibold mb-2 text-gray-600">2. Puxe os Dados (Opcional)</h2>
+                     <h2 className="text-lg font-semibold mb-2 text-gray-600">2. Puxar Dados de O.S. (Opcional)</h2>
                     <select
                         value={selectedOS}
                         onChange={(e) => setSelectedOS(e.target.value)}
@@ -142,7 +157,6 @@ const InvoiceIssuing: React.FC = () => {
                     </select>
                 </div>
                 
-                {/* Invoice Form */}
                 <div className="border-t pt-6">
                     <h2 className="text-lg font-semibold mb-4 text-gray-600">3. Preencha os Dados da Nota</h2>
                     

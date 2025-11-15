@@ -1,18 +1,55 @@
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
 interface DataTableProps<T> {
   columns: { header: string; accessor: keyof T | ((item: T) => React.ReactNode) }[];
   data: T[];
   renderActions?: (item: T) => React.ReactNode;
+  selection: string[]; // Array of selected item IDs
+  onSelectionChange: (newSelection: string[]) => void;
 }
 
-export function DataTable<T extends { id: string }>({ columns, data, renderActions }: DataTableProps<T>) {
+export function DataTable<T extends { id: string }>({ columns, data, renderActions, selection, onSelectionChange }: DataTableProps<T>) {
+  const headerCheckboxRef = useRef<HTMLInputElement>(null);
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      onSelectionChange(data.map(item => item.id));
+    } else {
+      onSelectionChange([]);
+    }
+  };
+
+  const handleSelectItem = (id: string) => {
+    const newSelection = selection.includes(id)
+      ? selection.filter(itemId => itemId !== id)
+      : [...selection, id];
+    onSelectionChange(newSelection);
+  };
+  
+  useEffect(() => {
+    if (headerCheckboxRef.current) {
+        const numSelected = selection.length;
+        const numItems = data.length;
+        headerCheckboxRef.current.checked = numSelected === numItems && numItems > 0;
+        headerCheckboxRef.current.indeterminate = numSelected > 0 && numSelected < numItems;
+    }
+  }, [selection, data.length]);
+
+
   return (
     <div className="overflow-x-auto bg-white rounded-lg shadow">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
+            <th scope="col" className="px-6 py-3">
+              <input
+                type="checkbox"
+                ref={headerCheckboxRef}
+                onChange={handleSelectAll}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+            </th>
             {columns.map((col, index) => (
               <th
                 key={index}
@@ -31,7 +68,15 @@ export function DataTable<T extends { id: string }>({ columns, data, renderActio
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {data.map((item) => (
-            <tr key={item.id} className="hover:bg-gray-50">
+            <tr key={item.id} className={`hover:bg-gray-50 ${selection.includes(item.id) ? 'bg-indigo-50' : ''}`}>
+              <td className="px-6 py-4 whitespace-nowrap">
+                 <input
+                    type="checkbox"
+                    checked={selection.includes(item.id)}
+                    onChange={() => handleSelectItem(item.id)}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                 />
+              </td>
               {columns.map((col, index) => (
                 <td key={index} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                   {typeof col.accessor === 'function'

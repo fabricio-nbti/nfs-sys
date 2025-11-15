@@ -69,6 +69,21 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
             enabled={settings.showAutomotiveRepair}
             onChange={() => handleToggle('showAutomotiveRepair')}
           />
+          <ToggleSwitch
+            label="O.S. - Segurança Eletrônica"
+            enabled={settings.showSecuritySystems}
+            onChange={() => handleToggle('showSecuritySystems')}
+          />
+          <ToggleSwitch
+            label="O.S. - Energia Solar"
+            enabled={settings.showSolarEnergy}
+            onChange={() => handleToggle('showSolarEnergy')}
+          />
+           <ToggleSwitch
+            label="O.S. - Consultoria TI"
+            enabled={settings.showITConsulting}
+            onChange={() => handleToggle('showITConsulting')}
+          />
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { MOCK_INVOICES } from '../constants';
 import { type Invoice, InvoiceStatus } from '../types';
 import { DataTable } from './shared/DataTable';
-import { Plus, Edit, Trash2, Eye, Printer, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Printer, X, ShieldX } from 'lucide-react';
 import Modal from './shared/Modal';
 import DanfeView from './shared/DanfeView';
 
@@ -14,9 +14,10 @@ const statusColorMap: Record<InvoiceStatus, string> = {
 };
 
 const Invoices: React.FC = () => {
-  const [invoices] = useState<Invoice[]>(MOCK_INVOICES);
+  const [invoices, setInvoices] = useState<Invoice[]>(MOCK_INVOICES);
   const [isDanfeModalOpen, setIsDanfeModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [selection, setSelection] = useState<string[]>([]);
   
   const openDanfeModal = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
@@ -38,6 +39,14 @@ const Invoices: React.FC = () => {
       ),
     },
   ];
+  
+  const handleBulkCancel = () => {
+    if (window.confirm(`Tem certeza que deseja cancelar ${selection.length} nota(s)?`)) {
+        setInvoices(prev => prev.map(inv => selection.includes(inv.id) ? { ...inv, status: InvoiceStatus.Canceled } : inv));
+        setSelection([]);
+    }
+  };
+
 
   return (
     <div>
@@ -46,9 +55,26 @@ const Invoices: React.FC = () => {
         {/* O botão de emitir nota foi movido para a página dedicada 'Emissão de Notas' */}
       </div>
 
+      {selection.length > 0 && (
+        <div className="bg-indigo-100 border-l-4 border-indigo-500 text-indigo-700 p-4 mb-4 rounded-r-lg flex justify-between items-center">
+            <span>{selection.length} selecionado(s)</span>
+            <div>
+              <button
+                onClick={handleBulkCancel}
+                className="bg-yellow-500 text-white px-3 py-1 rounded-md text-sm font-semibold hover:bg-yellow-600 flex items-center"
+              >
+                <ShieldX size={16} className="mr-1" />
+                Cancelar Selecionadas
+              </button>
+            </div>
+          </div>
+      )}
+
       <DataTable<Invoice>
         columns={columns}
         data={invoices}
+        selection={selection}
+        onSelectionChange={setSelection}
         renderActions={(item) => (
           <div className="flex space-x-2">
             <button onClick={() => openDanfeModal(item)} className="text-blue-600 hover:text-blue-900"><Eye size={18} /></button>

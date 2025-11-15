@@ -10,6 +10,7 @@ import Modal from './shared/Modal';
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selection, setSelection] = useState<string[]>([]);
 
   const columns = [
     { header: 'SKU', accessor: 'sku' as keyof Product },
@@ -24,6 +25,13 @@ const Products: React.FC = () => {
       setIsModalOpen(false);
   }
 
+  const handleBulkDelete = () => {
+    if (window.confirm(`Tem certeza que deseja excluir ${selection.length} produto(s)?`)) {
+      setProducts(prev => prev.filter(p => !selection.includes(p.id)));
+      setSelection([]);
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -36,9 +44,26 @@ const Products: React.FC = () => {
         </button>
       </div>
 
+      {selection.length > 0 && (
+         <div className="bg-indigo-100 border-l-4 border-indigo-500 text-indigo-700 p-4 mb-4 rounded-r-lg flex justify-between items-center">
+            <span>{selection.length} selecionado(s)</span>
+            <div>
+              <button
+                onClick={handleBulkDelete}
+                className="bg-red-500 text-white px-3 py-1 rounded-md text-sm font-semibold hover:bg-red-600 flex items-center"
+              >
+                <Trash2 size={16} className="mr-1" />
+                Excluir Selecionados
+              </button>
+            </div>
+          </div>
+      )}
+
       <DataTable<Product>
         columns={columns}
         data={products}
+        selection={selection}
+        onSelectionChange={setSelection}
         renderActions={(item) => (
           <div className="flex space-x-2">
             <button className="text-yellow-600 hover:text-yellow-900"><Edit size={18} /></button>

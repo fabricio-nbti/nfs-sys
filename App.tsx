@@ -11,8 +11,12 @@ import AccountsReceivable from './components/AccountsReceivable';
 import ServiceOrders from './components/ServiceOrders';
 import ElectronicsServiceOrders from './components/ElectronicsServiceOrders';
 import AutomotiveServiceOrders from './components/AutomotiveServiceOrders';
+import SecurityServiceOrders from './components/SecurityServiceOrders';
+import SolarEnergyServiceOrders from './components/SolarEnergyServiceOrders';
+import ITConsultingServiceOrders from './components/ITConsultingServiceOrders';
 import Settings from './components/Settings';
 import InvoiceIssuing from './components/InvoiceIssuing';
+import ShopeeCalc from './components/ShopeeCalc';
 import { type Page, type AppSettings } from './types';
 
 const App: React.FC = () => {
@@ -22,24 +26,33 @@ const App: React.FC = () => {
     showElectronicsRepair: true,
     showAutomotiveRepair: true,
     showInvoiceIssuing: true,
+    showSecuritySystems: true,
+    showSolarEnergy: true,
+    showITConsulting: true,
   });
 
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard settings={settings} />;
       case 'pdv':
         return <PDV />;
       case 'invoices':
         return <Invoices />;
       case 'invoice-issuing':
-        return settings.showInvoiceIssuing ? <InvoiceIssuing /> : <Dashboard />;
+        return settings.showInvoiceIssuing ? <InvoiceIssuing settings={settings} /> : <Dashboard settings={settings} />;
       case 'service-orders':
-        return settings.showMobileRepair ? <ServiceOrders /> : <Dashboard />;
+        return settings.showMobileRepair ? <ServiceOrders /> : <Dashboard settings={settings} />;
       case 'electronics-service-orders':
-        return settings.showElectronicsRepair ? <ElectronicsServiceOrders /> : <Dashboard />;
+        return settings.showElectronicsRepair ? <ElectronicsServiceOrders /> : <Dashboard settings={settings} />;
       case 'automotive-service-orders':
-        return settings.showAutomotiveRepair ? <AutomotiveServiceOrders /> : <Dashboard />;
+        return settings.showAutomotiveRepair ? <AutomotiveServiceOrders /> : <Dashboard settings={settings} />;
+       case 'security-service-orders':
+        return settings.showSecuritySystems ? <SecurityServiceOrders /> : <Dashboard settings={settings} />;
+      case 'solar-energy-service-orders':
+        return settings.showSolarEnergy ? <SolarEnergyServiceOrders /> : <Dashboard settings={settings} />;
+      case 'it-consulting-service-orders':
+        return settings.showITConsulting ? <ITConsultingServiceOrders /> : <Dashboard settings={settings} />;
       case 'products':
         return <Products />;
       case 'customers':
@@ -50,10 +63,12 @@ const App: React.FC = () => {
         return <AccountsPayable />;
       case 'accounts-receivable':
         return <AccountsReceivable />;
+      case 'shopee-calc':
+        return <ShopeeCalc />;
       case 'settings':
         return <Settings settings={settings} setSettings={setSettings} />;
       default:
-        return <Dashboard />;
+        return <Dashboard settings={settings} />;
     }
   };
 

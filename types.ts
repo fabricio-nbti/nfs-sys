@@ -1,5 +1,4 @@
-
-export type Page = 'dashboard' | 'pdv' | 'products' | 'customers' | 'invoices' | 'invoice-issuing' | 'companies' | 'accounts-payable' | 'accounts-receivable' | 'service-orders' | 'electronics-service-orders' | 'automotive-service-orders' | 'settings';
+export type Page = 'dashboard' | 'pdv' | 'products' | 'customers' | 'invoices' | 'invoice-issuing' | 'companies' | 'accounts-payable' | 'accounts-receivable' | 'service-orders' | 'electronics-service-orders' | 'automotive-service-orders' | 'security-service-orders' | 'solar-energy-service-orders' | 'it-consulting-service-orders' | 'settings' | 'shopee-calc';
 
 export interface Product {
   id: string;
@@ -116,6 +115,7 @@ export interface ServiceOrder {
   totalValue?: number;
   publicLink?: string;
   year?: string; // Ano do veículo
+  dataConclusao?: string;
 }
 
 export interface AppSettings {
@@ -123,4 +123,7 @@ export interface AppSettings {
   showElectronicsRepair: boolean;
   showAutomotiveRepair: boolean;
   showInvoiceIssuing: boolean;
+  showSecuritySystems: boolean;
+  showSolarEnergy: boolean;
+  showITConsulting: boolean;
 }

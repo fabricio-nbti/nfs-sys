@@ -64,7 +64,8 @@ const DanfeView: React.FC<DanfeViewProps> = ({ invoice }) => {
                 <Box title="CNPJ">{invoice.issuer.document}</Box>
                 <Box title="Endereço" className="col-span-4">{invoice.issuer.address}</Box>
                 <Box title="Inscrição Estadual">{invoice.issuer.stateRegistration}</Box>
-                <Box title="Inscrição Estadual Subst. Trib."></Box>
+                {/* FIX: Added empty children to Box component to satisfy required 'children' prop. */}
+                <Box title="Inscrição Estadual Subst. Trib."> </Box>
             </div>
         </section>
         <section className="border-t-2 border-black p-2">
@@ -75,12 +76,17 @@ const DanfeView: React.FC<DanfeViewProps> = ({ invoice }) => {
                 <Box title="Data de Emissão">{invoice.issueDate}</Box>
                 <Box title="Endereço" className="col-span-4">{invoice.customer.address}</Box>
                 <Box title="Data de Saída">{invoice.exitDate}</Box>
-                <Box title="Bairro / Distrito"></Box>
-                <Box title="CEP"></Box>
-                <Box title="Município"></Box>
+                {/* FIX: Added empty children to Box component to satisfy required 'children' prop. */}
+                <Box title="Bairro / Distrito"> </Box>
+                {/* FIX: Added empty children to Box component to satisfy required 'children' prop. */}
+                <Box title="CEP"> </Box>
+                {/* FIX: Added empty children to Box component to satisfy required 'children' prop. */}
+                <Box title="Município"> </Box>
                 <Box title="Fone / Fax">{invoice.customer.phone}</Box>
-                <Box title="UF"></Box>
-                <Box title="Hora da Saída"></Box>
+                {/* FIX: Added empty children to Box component to satisfy required 'children' prop. */}
+                <Box title="UF"> </Box>
+                {/* FIX: Added empty children to Box component to satisfy required 'children' prop. */}
+                <Box title="Hora da Saída"> </Box>
             </div>
         </section>
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { type Page, type AppSettings } from '../types';
-import { BarChart3, ShoppingCart, Receipt, Box, Users, Building, ArrowDownCircle, ArrowUpCircle, Menu, X, Wrench, Tv, Cog, Car, FileText } from 'lucide-react';
+import { BarChart3, ShoppingCart, Receipt, Box, Users, Building, ArrowDownCircle, ArrowUpCircle, Menu, X, Wrench, Tv, Cog, Car, FileText, ShieldCheck, Sun, Network, Calculator } from 'lucide-react';
 
 interface SidebarProps {
   currentPage: Page;
@@ -30,11 +30,15 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings
     { icon: <Wrench size={20} />, label: 'O.S. - Celulares', page: 'service-orders' as Page, condition: settings.showMobileRepair },
     { icon: <Tv size={20} />, label: 'O.S. - Eletrônicos', page: 'electronics-service-orders' as Page, condition: settings.showElectronicsRepair },
     { icon: <Car size={20} />, label: 'O.S. - Automotivo', page: 'automotive-service-orders' as Page, condition: settings.showAutomotiveRepair },
+    { icon: <ShieldCheck size={20} />, label: 'O.S. - Segurança', page: 'security-service-orders' as Page, condition: settings.showSecuritySystems },
+    { icon: <Sun size={20} />, label: 'O.S. - Energia Solar', page: 'solar-energy-service-orders' as Page, condition: settings.showSolarEnergy },
+    { icon: <Network size={20} />, label: 'O.S. - Consultoria TI', page: 'it-consulting-service-orders' as Page, condition: settings.showITConsulting },
     { icon: <Box size={20} />, label: 'Produtos', page: 'products' as Page, condition: true },
     { icon: <Users size={20} />, label: 'Clientes', page: 'customers' as Page, condition: true },
     { icon: <Building size={20} />, label: 'Empresas', page: 'companies' as Page, condition: true },
     { icon: <ArrowDownCircle size={20} />, label: 'Contas a Pagar', page: 'accounts-payable' as Page, condition: true },
     { icon: <ArrowUpCircle size={20} />, label: 'Contas a Receber', page: 'accounts-receivable' as Page, condition: true },
+    { icon: <Calculator size={20} />, label: 'Calculadora Shopee', page: 'shopee-calc' as Page, condition: true },
   ];
 
   const settingsItem = { icon: <Cog size={20} />, label: 'Configurações', page: 'settings' as Page, condition: true };

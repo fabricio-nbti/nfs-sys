@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { MOCK_SERVICE_ORDERS } from '../constants';
+import { MOCK_IT_CONSULTING_SERVICE_ORDERS } from '../constants';
 import { type ServiceOrder, ServiceOrderStatus } from '../types';
 import { DataTable } from './shared/DataTable';
 import { Plus, Edit, Eye, Share2, ClipboardCopy, UploadCloud, Image as ImageIcon, Video, X, Trash2 } from 'lucide-react';
@@ -14,8 +14,8 @@ const statusColorMap: Record<ServiceOrderStatus, string> = {
   [ServiceOrderStatus.Canceled]: 'bg-red-100 text-red-800',
 };
 
-const ServiceOrders: React.FC = () => {
-  const [serviceOrders, setServiceOrders] = useState<ServiceOrder[]>(MOCK_SERVICE_ORDERS);
+const ITConsultingServiceOrders: React.FC = () => {
+  const [serviceOrders, setServiceOrders] = useState<ServiceOrder[]>(MOCK_IT_CONSULTING_SERVICE_ORDERS);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
@@ -27,7 +27,7 @@ const ServiceOrders: React.FC = () => {
   const columns = [
     { header: 'Nº O.S.', accessor: 'id' as keyof ServiceOrder },
     { header: 'Cliente', accessor: 'customerName' as keyof ServiceOrder },
-    { header: 'Equipamento', accessor: (item: ServiceOrder) => `${item.deviceType} ${item.deviceBrand}` },
+    { header: 'Tipo de Serviço', accessor: 'deviceType' as keyof ServiceOrder },
     { header: 'Data Entrada', accessor: 'creationDate' as keyof ServiceOrder },
     { header: 'Data Conclusão', accessor: (item: ServiceOrder) => item.dataConclusao ? new Date(item.dataConclusao).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '---' },
     {
@@ -78,7 +78,7 @@ const ServiceOrders: React.FC = () => {
           } else { // Create new order
               const newOrder = {
                   ...currentOrder,
-                  id: `OS-${Date.now()}`,
+                  id: `OSTI-${Date.now()}`,
                   creationDate: new Date().toISOString().split('T')[0],
               } as ServiceOrder;
               setServiceOrders(prev => [newOrder, ...prev]);
@@ -130,15 +130,15 @@ const ServiceOrders: React.FC = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">O.S. - Celulares & Notebooks</h1>
+        <h1 className="text-3xl font-bold text-gray-800">O.S. - Consultoria TI</h1>
         <button 
           onClick={() => openFormModal()}
           className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors">
           <Plus size={20} className="mr-2" />
-          Nova O.S.
+          Nova O.S. (TI)
         </button>
       </div>
-      
+
       {selection.length > 0 && (
          <div className="bg-indigo-100 border-l-4 border-indigo-500 text-indigo-700 p-4 mb-4 rounded-r-lg flex justify-between items-center">
             <span>{selection.length} selecionado(s)</span>
@@ -173,21 +173,24 @@ const ServiceOrders: React.FC = () => {
         <form onSubmit={handleFormSubmit} className="max-h-[80vh] overflow-y-auto pr-2">
             <h3 className="text-lg font-semibold mb-2 text-primary">Dados do Cliente</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <input type="text" name="customerName" placeholder="Nome completo" value={currentOrder?.customerName || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
-                <input type="tel" name="customerPhone" placeholder="Telefone" value={currentOrder?.customerPhone || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md"/>
-                <input type="email" name="customerEmail" placeholder="E-mail" value={currentOrder?.customerEmail || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md col-span-2"/>
+                <input type="text" name="customerName" placeholder="Nome da Empresa/Cliente" value={currentOrder?.customerName || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
+                <input type="tel" name="customerPhone" placeholder="Telefone de Contato" value={currentOrder?.customerPhone || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md"/>
+                <input type="email" name="customerEmail" placeholder="E-mail de Contato" value={currentOrder?.customerEmail || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md col-span-2"/>
             </div>
 
-            <h3 className="text-lg font-semibold mb-2 text-primary">Dados do Equipamento</h3>
+            <h3 className="text-lg font-semibold mb-2 text-primary">Dados do Atendimento</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <select name="deviceType" value={currentOrder?.deviceType || 'Celular'} onChange={handleInputChange} className="p-2 w-full border rounded-md bg-white">
-                    <option>Celular</option>
-                    <option>Notebook</option>
+                <select name="deviceType" value={currentOrder?.deviceType || 'Suporte Técnico Remoto'} onChange={handleInputChange} className="p-2 w-full border rounded-md bg-white">
+                    <option>Suporte Técnico Remoto</option>
+                    <option>Manutenção de Servidor</option>
+                    <option>Gestão de Rede</option>
+                    <option>Backup em Nuvem</option>
+                    <option>Segurança da Informação</option>
+                    <option>Outro</option>
                 </select>
-                <input type="text" name="deviceBrand" placeholder="Marca" value={currentOrder?.deviceBrand || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
-                <input type="text" name="deviceModel" placeholder="Modelo" value={currentOrder?.deviceModel || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
-                <input type="text" name="imeiOrSerial" placeholder="IMEI ou Nº de Série" value={currentOrder?.imeiOrSerial || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md"/>
-                <textarea name="accessories" placeholder="Acessórios (ex: carregador, cabo, capa)" value={currentOrder?.accessories || ''} onChange={handleInputChange} rows={2} className="p-2 w-full border rounded-md col-span-2"></textarea>
+                <input type="text" name="deviceBrand" placeholder="Sistema/Plataforma (ex: Windows Server, Azure)" value={currentOrder?.deviceBrand || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
+                <input type="text" name="deviceModel" placeholder="Equipamento Afetado (ex: Servidor Dell)" value={currentOrder?.deviceModel || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
+                <input type="text" name="imeiOrSerial" placeholder="Nº do Contrato ou Chamado" value={currentOrder?.imeiOrSerial || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md col-span-2"/>
             </div>
 
             <h3 className="text-lg font-semibold mb-2 text-primary">Serviço</h3>
@@ -206,22 +209,22 @@ const ServiceOrders: React.FC = () => {
                        </div>
                     )}
                  </div>
-                <textarea name="reportedProblem" placeholder="Problema Relatado pelo Cliente" value={currentOrder?.reportedProblem || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md" required></textarea>
-                <textarea name="technicianNotes" placeholder="Observações do Técnico" value={currentOrder?.technicianNotes || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md"></textarea>
-                <textarea name="partsUsed" placeholder="Peças Utilizadas" value={currentOrder?.partsUsed || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md"></textarea>
+                <textarea name="reportedProblem" placeholder="Problema Relatado / Chamado" value={currentOrder?.reportedProblem || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md" required></textarea>
+                <textarea name="technicianNotes" placeholder="Solução Aplicada / Horas Trabalhadas" value={currentOrder?.technicianNotes || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md"></textarea>
+                <textarea name="partsUsed" placeholder="Licenças de Software / Hardware Utilizados" value={currentOrder?.partsUsed || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md"></textarea>
                 <div className="flex gap-4">
                     <input type="number" name="serviceCost" step="0.01" placeholder="Custo do Serviço (R$)" value={currentOrder?.serviceCost || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md"/>
-                    <input type="number" name="partsCost" step="0.01" placeholder="Custo das Peças (R$)" value={currentOrder?.partsCost || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md"/>
+                    <input type="number" name="partsCost" step="0.01" placeholder="Custo de Licenças/Hardware (R$)" value={currentOrder?.partsCost || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md"/>
                 </div>
              </div>
 
-            <h3 className="text-lg font-semibold mb-2 text-primary">Fotos e Vídeos</h3>
+            <h3 className="text-lg font-semibold mb-2 text-primary">Anexos (Logs, Prints)</h3>
             <div>
-                <label htmlFor="file-upload" className="w-full flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-md cursor-pointer hover:bg-gray-50">
+                <label htmlFor="file-upload-it" className="w-full flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-md cursor-pointer hover:bg-gray-50">
                     <UploadCloud className="w-8 h-8 text-gray-400"/>
                     <span className="mt-2 text-sm text-gray-600">Clique para selecionar arquivos</span>
                 </label>
-                <input id="file-upload" type="file" multiple className="hidden" onChange={(e) => setUploadedFiles(Array.from(e.target.files || []))}/>
+                <input id="file-upload-it" type="file" multiple className="hidden" onChange={(e) => setUploadedFiles(Array.from(e.target.files || []))}/>
                 {renderMediaPreview()}
             </div>
 
@@ -237,17 +240,18 @@ const ServiceOrders: React.FC = () => {
         {selectedOrder && (
           <div className="text-sm text-gray-700 space-y-3 max-h-[80vh] overflow-y-auto pr-2">
             <p><strong>Cliente:</strong> {selectedOrder.customerName}</p>
-            <p><strong>Equipamento:</strong> {`${selectedOrder.deviceType} ${selectedOrder.deviceBrand} ${selectedOrder.deviceModel}`}</p>
-            <p><strong>Problema Relatado:</strong> {selectedOrder.reportedProblem}</p>
+            <p><strong>Serviço:</strong> {selectedOrder.deviceType}</p>
+            <p><strong>Sistema:</strong> {`${selectedOrder.deviceBrand} / ${selectedOrder.deviceModel}`}</p>
+            <p><strong>Chamado:</strong> {selectedOrder.reportedProblem}</p>
             <p><strong>Status:</strong> <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColorMap[selectedOrder.status]}`}>{selectedOrder.status}</span></p>
             {selectedOrder.dataConclusao && <p><strong>Data de Conclusão:</strong> {new Date(selectedOrder.dataConclusao).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p>}
-            {selectedOrder.technicianNotes && <p><strong>Notas do Técnico:</strong> {selectedOrder.technicianNotes}</p>}
+            {selectedOrder.technicianNotes && <p><strong>Solução:</strong> {selectedOrder.technicianNotes}</p>}
             {selectedOrder.totalValue && <p><strong>Valor Total:</strong> R$ {selectedOrder.totalValue.toFixed(2)}</p>}
             {selectedOrder.mediaUrls && selectedOrder.mediaUrls.length > 0 && (
                 <div>
-                    <strong>Mídia:</strong>
+                    <strong>Anexos:</strong>
                     <div className="grid grid-cols-3 gap-2 mt-1">
-                        {selectedOrder.mediaUrls.map((url, i) => <img key={i} src={url} alt={`Mídia ${i+1}`} className="w-full h-auto rounded" />)}
+                        {selectedOrder.mediaUrls.map((url, i) => <img key={i} src={url} alt={`Anexo ${i+1}`} className="w-full h-auto rounded" />)}
                     </div>
                 </div>
             )}
@@ -280,4 +284,4 @@ const ServiceOrders: React.FC = () => {
   );
 };
 
-export default ServiceOrders;
+export default ITConsultingServiceOrders;

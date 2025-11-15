@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -20,6 +19,9 @@
               'text-primary': '#111827',
               'text-secondary': '#6b7280',
             },
+            fontFamily: {
+              'mono': ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', '"Liberation Mono"', '"Courier New"', 'monospace'],
+            }
           },
         },
       }
@@ -40,10 +42,12 @@
     body * {
       visibility: hidden;
     }
-    #danfe-print-area, #danfe-print-area * {
+    #danfe-print-area, #danfe-print-area *,
+    #receipt-print-area, #receipt-print-area *,
+    #service-order-receipt-print-area, #service-order-receipt-print-area * {
       visibility: visible;
     }
-    #danfe-print-area {
+    #danfe-print-area, #receipt-print-area, #service-order-receipt-print-area {
       position: absolute;
       left: 0;
       top: 0;

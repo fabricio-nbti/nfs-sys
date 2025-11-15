@@ -1,16 +1,23 @@
-
 import React, { useState } from 'react';
-import { MOCK_PRODUCTS } from '../constants';
-import { type Product } from '../types';
-import { PlusCircle, MinusCircle, XCircle, Search, CreditCard, Landmark, QrCode } from 'lucide-react';
+import { MOCK_PRODUCTS, MOCK_COMPANIES } from '../constants';
+import { type Product, type Company, type ReceiptData } from '../types';
+import { PlusCircle, MinusCircle, XCircle, Search, CreditCard, Landmark, QrCode, Printer, X } from 'lucide-react';
+import ReceiptView from './shared/ReceiptView';
 
 interface CartItem extends Product {
   quantity: number;
 }
 
+type PaymentMethod = 'Crédito' | 'Débito' | 'Pix';
+
 const PDV: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
+  const [installments, setInstallments] = useState<number | null>(null);
+
 
   const addToCart = (product: Product) => {
     setCart(prevCart => {
@@ -42,16 +49,63 @@ const PDV: React.FC = () => {
   const taxes = subtotal * 0.09; // Simulação de imposto
   const total = subtotal + taxes;
 
+  const handlePaymentMethodSelect = (name: PaymentMethod) => {
+      setSelectedPaymentMethod(name);
+      setInstallments(null); // Reseta as parcelas ao trocar de método
+  };
+
   const finalizeSale = () => {
     if (cart.length === 0) {
       alert("Adicione produtos ao carrinho para finalizar a venda.");
       return;
     }
-    // Lógica de finalização de venda
-    // Aqui ocorreria a chamada para um backend para emitir a NFCe/NFe via nfe-sped
-    alert(`Venda finalizada! Total: R$ ${total.toFixed(2)}. Uma NFCe seria emitida agora.`);
-    setCart([]);
+    if (!selectedPaymentMethod) {
+        alert("Por favor, selecione uma forma de pagamento.");
+        return;
+    }
+     if (selectedPaymentMethod === 'Crédito' && !installments) {
+        alert("Por favor, selecione o número de parcelas.");
+        return;
+    }
+    
+    const newReceiptData: ReceiptData = {
+      id: `TX-${Date.now()}`,
+      date: new Date().toLocaleString('pt-BR'),
+      company: MOCK_COMPANIES[0], // Pega a primeira empresa como vendedora
+      items: cart.map(item => ({
+        quantity: item.quantity,
+        name: item.name,
+        unitPrice: item.price,
+        totalPrice: item.price * item.quantity
+      })),
+      subtotal: subtotal,
+      taxes: taxes,
+      total: total,
+      paymentMethod: selectedPaymentMethod,
+      installments: selectedPaymentMethod === 'Crédito' ? installments || undefined : undefined,
+    };
+
+    setReceiptData(newReceiptData);
+    setIsReceiptModalOpen(true);
   };
+  
+  const handleCloseReceiptModal = () => {
+    setIsReceiptModalOpen(false);
+    setReceiptData(null);
+    setCart([]); // Limpa o carrinho após fechar o modal
+    setSelectedPaymentMethod(null); // Limpa a forma de pagamento
+    setInstallments(null);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+  
+  const paymentMethods: {name: PaymentMethod, icon: React.ReactNode}[] = [
+      { name: 'Crédito', icon: <CreditCard/> },
+      { name: 'Débito', icon: <Landmark/> },
+      { name: 'Pix', icon: <QrCode/> },
+  ];
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col lg:flex-row gap-6 p-4">
@@ -119,20 +173,70 @@ const PDV: React.FC = () => {
           <div className="mb-4">
               <h3 className="font-semibold text-center mb-2">Forma de Pagamento</h3>
               <div className="flex justify-center gap-4">
-                  <button className="flex flex-col items-center p-2 border rounded-lg hover:bg-gray-100"><CreditCard/><span>Crédito</span></button>
-                  <button className="flex flex-col items-center p-2 border rounded-lg hover:bg-gray-100"><Landmark/><span>Débito</span></button>
-                  <button className="flex flex-col items-center p-2 border rounded-lg hover:bg-gray-100"><QrCode/><span>Pix</span></button>
+                {paymentMethods.map(({ name, icon }) => (
+                     <button 
+                        key={name}
+                        onClick={() => handlePaymentMethodSelect(name)}
+                        className={`flex flex-col items-center p-2 border rounded-lg w-24 transition-colors ${
+                            selectedPaymentMethod === name 
+                            ? 'bg-primary text-white border-primary' 
+                            : 'hover:bg-gray-100'
+                        }`}
+                     >
+                        {icon}
+                        <span>{name}</span>
+                    </button>
+                ))}
               </div>
+              {selectedPaymentMethod === 'Crédito' && (
+                <div className="mt-4">
+                    <label htmlFor="installments" className="block text-sm font-medium text-gray-700 text-center mb-1">Parcelas</label>
+                    <select
+                        id="installments"
+                        value={installments || ''}
+                        onChange={(e) => setInstallments(Number(e.target.value))}
+                        className="w-full p-2 border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                        <option value="" disabled>Selecione...</option>
+                        {Array.from({ length: 18 }, (_, i) => i + 1).map(num => (
+                            <option key={num} value={num}>
+                                {num === 1 ? 'À vista' : `${num}x`}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+              )}
           </div>
           <button 
             onClick={finalizeSale}
             className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:bg-gray-400"
-            disabled={cart.length === 0}
+            disabled={cart.length === 0 || !selectedPaymentMethod || (selectedPaymentMethod === 'Crédito' && !installments)}
             >
-            Finalizar Venda e Emitir NFCe
+            Finalizar Venda e Emitir Cupom
           </button>
         </div>
       </div>
+
+      {/* Receipt Modal */}
+       {isReceiptModalOpen && receiptData && (
+         <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
+           <div className="bg-gray-100 rounded-lg shadow-xl w-full max-w-sm flex flex-col">
+             <div className="p-4 overflow-y-auto">
+                <ReceiptView receipt={receiptData} />
+             </div>
+             <div className="flex justify-between items-center p-4 border-t bg-white rounded-b-lg no-print">
+               <button onClick={handleCloseReceiptModal} className="text-gray-600 hover:text-gray-900 font-semibold flex items-center gap-2">
+                    <X size={18} />
+                    Fechar
+               </button>
+               <button onClick={handlePrint} className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors">
+                   <Printer size={18} className="mr-2" />
+                   Imprimir Cupom
+               </button>
+             </div>
+           </div>
+         </div>
+      )}
     </div>
   );
 };

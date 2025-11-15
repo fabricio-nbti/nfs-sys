@@ -116,6 +116,7 @@ export interface ServiceOrder {
   publicLink?: string;
   year?: string; // Ano do veículo
   dataConclusao?: string;
+  estimatedDeliveryDate?: string;
 }
 
 export interface AppSettings {
@@ -156,4 +157,21 @@ export interface User {
   role: 'Admin' | 'Operador';
   permissions: UserPermissions;
   companyId?: string;
+}
+
+export interface ReceiptData {
+  id: string;
+  date: string;
+  company: Company;
+  items: {
+    quantity: number;
+    name: string;
+    unitPrice: number;
+    totalPrice: number;
+  }[];
+  subtotal: number;
+  taxes: number;
+  total: number;
+  paymentMethod?: string;
+  installments?: number;
 }

@@ -1,10 +1,14 @@
 
+
+
 import React, { useState, useMemo } from 'react';
-import { MOCK_SECURITY_SERVICE_ORDERS } from '../constants';
+import { MOCK_SECURITY_SERVICE_ORDERS, MOCK_COMPANIES } from '../constants';
 import { type ServiceOrder, ServiceOrderStatus } from '../types';
 import { DataTable } from './shared/DataTable';
-import { Plus, Edit, Eye, Share2, ClipboardCopy, UploadCloud, Image as ImageIcon, Video, X, Trash2 } from 'lucide-react';
+import { Plus, Edit, Eye, Share2, ClipboardCopy, UploadCloud, Image as ImageIcon, Video, X, Trash2, Printer } from 'lucide-react';
 import Modal from './shared/Modal';
+import ServiceOrderReceiptView from './shared/ServiceOrderReceiptView';
+
 
 const statusColorMap: Record<ServiceOrderStatus, string> = {
   [ServiceOrderStatus.Pending]: 'bg-blue-100 text-blue-800',
@@ -19,6 +23,8 @@ const SecurityServiceOrders: React.FC = () => {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [receiptOrderData, setReceiptOrderData] = useState<ServiceOrder | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<ServiceOrder | null>(null);
   const [currentOrder, setCurrentOrder] = useState<Partial<ServiceOrder> | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -62,7 +68,14 @@ const SecurityServiceOrders: React.FC = () => {
     const { name, value } = e.target;
     setCurrentOrder(prev => {
         if (!prev) return null;
-        const updatedOrder = { ...prev, [name]: value };
+        
+        let finalValue: any = value;
+        if (name === 'serviceCost' || name === 'partsCost') {
+            finalValue = value === '' ? undefined : parseFloat(value);
+        }
+
+        const updatedOrder = { ...prev, [name]: finalValue };
+
         if (name === 'status' && value === ServiceOrderStatus.Completed && !updatedOrder.dataConclusao) {
             updatedOrder.dataConclusao = new Date().toISOString().split('T')[0];
         }
@@ -73,20 +86,36 @@ const SecurityServiceOrders: React.FC = () => {
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (currentOrder) {
+          const serviceCost = Number(currentOrder.serviceCost) || 0;
+          const partsCost = Number(currentOrder.partsCost) || 0;
+          const totalValue = serviceCost + partsCost > 0 ? serviceCost + partsCost : undefined;
+
           if (currentOrder.id) { // Update existing order
-              setServiceOrders(prev => prev.map(o => o.id === currentOrder.id ? currentOrder as ServiceOrder : o));
+              const updatedOrder = {
+                  ...currentOrder,
+                  totalValue
+              } as ServiceOrder;
+              setServiceOrders(prev => prev.map(o => o.id === currentOrder.id ? updatedOrder : o));
+              alert('Ordem de Serviço atualizada com sucesso! (Simulação)');
+              setIsFormModalOpen(false);
+              setCurrentOrder(null);
           } else { // Create new order
+              const timestamp = Date.now();
               const newOrder = {
                   ...currentOrder,
-                  id: `OSS-${Date.now()}`,
+                  id: `OSS-${timestamp}`,
                   creationDate: new Date().toISOString().split('T')[0],
+                  publicLink: `https://example.com/os/view/oss-${timestamp}`,
+                  totalValue
               } as ServiceOrder;
               setServiceOrders(prev => [newOrder, ...prev]);
+              
+              setReceiptOrderData(newOrder);
+              setIsReceiptModalOpen(true);
+              setIsFormModalOpen(false);
+              setCurrentOrder(null);
           }
       }
-      alert('Ordem de Serviço salva com sucesso! (Simulação)');
-      setIsFormModalOpen(false);
-      setCurrentOrder(null);
   };
 
   const handleFileCopy = (textToCopy: string) => {
@@ -203,10 +232,15 @@ const SecurityServiceOrders: React.FC = () => {
                           {Object.values(ServiceOrderStatus).map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
-                    {currentOrder?.status === ServiceOrderStatus.Completed && (
+                     {currentOrder?.status === ServiceOrderStatus.Completed ? (
                        <div>
                          <label className="block text-sm font-medium text-gray-700">Data de Conclusão</label>
                          <input type="date" name="dataConclusao" value={currentOrder?.dataConclusao || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
+                       </div>
+                    ) : (
+                       <div>
+                         <label className="block text-sm font-medium text-gray-700">Previsão de Entrega</label>
+                         <input type="date" name="estimatedDeliveryDate" value={currentOrder?.estimatedDeliveryDate || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md mt-1"/>
                        </div>
                     )}
                  </div>
@@ -281,6 +315,26 @@ const SecurityServiceOrders: React.FC = () => {
         )}
       </Modal>
 
+      {/* Receipt Modal */}
+      {isReceiptModalOpen && receiptOrderData && (
+         <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
+           <div className="bg-gray-100 rounded-lg shadow-xl w-full max-w-sm flex flex-col">
+             <div className="p-4 overflow-y-auto">
+                <ServiceOrderReceiptView order={receiptOrderData} company={MOCK_COMPANIES[0]} />
+             </div>
+             <div className="flex justify-between items-center p-4 border-t bg-white rounded-b-lg no-print">
+               <button onClick={() => setIsReceiptModalOpen(false)} className="text-gray-600 hover:text-gray-900 font-semibold flex items-center gap-2">
+                    <X size={18} />
+                    Fechar
+               </button>
+               <button onClick={() => window.print()} className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors">
+                   <Printer size={18} className="mr-2" />
+                   Imprimir Comprovante
+               </button>
+             </div>
+           </div>
+         </div>
+      )}
     </div>
   );
 };

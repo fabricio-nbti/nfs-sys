@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MOCK_PRODUCTS, MOCK_COMPANIES } from '../constants';
 import { type Product, type Company, type ReceiptData } from '../types';
@@ -9,6 +10,17 @@ interface CartItem extends Product {
 }
 
 type PaymentMethod = 'Crédito' | 'Débito' | 'Pix';
+
+const formatCurrency = (value: number | null | undefined): string => {
+  const numberValue = Number(value);
+  if (value === null || typeof value === 'undefined' || isNaN(numberValue)) {
+    return 'R$ 0,00';
+  }
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(numberValue);
+};
 
 const PDV: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -127,7 +139,7 @@ const PDV: React.FC = () => {
             {filteredProducts.map(product => (
                 <div key={product.id} className="border p-4 rounded-lg text-center cursor-pointer hover:shadow-lg hover:border-primary transition-all" onClick={() => addToCart(product)}>
                 <h3 className="font-semibold truncate">{product.name}</h3>
-                <p className="text-gray-600">R$ {product.price.toFixed(2)}</p>
+                <p className="text-gray-600">{formatCurrency(product.price)}</p>
                 </div>
             ))}
             </div>
@@ -145,7 +157,7 @@ const PDV: React.FC = () => {
               <div key={item.id} className="flex justify-between items-center mb-4 pb-2 border-b">
                 <div>
                   <p className="font-semibold">{item.name}</p>
-                  <p className="text-sm text-gray-500">R$ {item.price.toFixed(2)}</p>
+                  <p className="text-sm text-gray-500">{formatCurrency(item.price)}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={() => updateQuantity(item.id, -1)} className="text-primary hover:text-red-500"><MinusCircle size={20}/></button>
@@ -160,15 +172,15 @@ const PDV: React.FC = () => {
         <div className="mt-auto pt-4 border-t">
           <div className="flex justify-between mb-2">
             <span className="text-gray-600">Subtotal</span>
-            <span>R$ {subtotal.toFixed(2)}</span>
+            <span>{formatCurrency(subtotal)}</span>
           </div>
           <div className="flex justify-between mb-2">
             <span className="text-gray-600">Impostos</span>
-            <span>R$ {taxes.toFixed(2)}</span>
+            <span>{formatCurrency(taxes)}</span>
           </div>
           <div className="flex justify-between font-bold text-xl mb-4">
             <span>Total</span>
-            <span>R$ {total.toFixed(2)}</span>
+            <span>{formatCurrency(total)}</span>
           </div>
           <div className="mb-4">
               <h3 className="font-semibold text-center mb-2">Forma de Pagamento</h3>

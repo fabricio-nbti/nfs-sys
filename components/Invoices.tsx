@@ -13,6 +13,17 @@ const statusColorMap: Record<InvoiceStatus, string> = {
   [InvoiceStatus.Canceled]: 'bg-red-100 text-red-800',
 };
 
+const formatCurrency = (value: number | null | undefined): string => {
+  const numberValue = Number(value);
+  if (value === null || typeof value === 'undefined' || isNaN(numberValue)) {
+    return 'R$ 0,00';
+  }
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(numberValue);
+};
+
 const Invoices: React.FC = () => {
   const [invoices, setInvoices] = useState<Invoice[]>(MOCK_INVOICES);
   const [isDanfeModalOpen, setIsDanfeModalOpen] = useState(false);
@@ -28,7 +39,7 @@ const Invoices: React.FC = () => {
     { header: 'Número', accessor: 'id' as keyof Invoice },
     { header: 'Cliente', accessor: (item: Invoice) => item.customer.name },
     { header: 'Emissão', accessor: 'issueDate' as keyof Invoice },
-    { header: 'Valor', accessor: (item: Invoice) => `R$ ${item.totalInvoice.toFixed(2)}` },
+    { header: 'Valor', accessor: (item: Invoice) => formatCurrency(item.totalInvoice) },
     { header: 'Tipo', accessor: 'type' as keyof Invoice },
     {
       header: 'Status',

@@ -31,6 +31,7 @@ const ServiceOrders: React.FC = () => {
   const [currentOrder, setCurrentOrder] = useState<Partial<ServiceOrder> | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [selection, setSelection] = useState<string[]>([]);
+  const [mediaPreview, setMediaPreview] = useState<{ type: 'image' | 'video'; url: string; } | null>(null);
 
   const columns = [
     { header: 'Nº O.S.', accessor: 'id' as keyof ServiceOrder },
@@ -238,23 +239,47 @@ const ServiceOrders: React.FC = () => {
                     <div>
                         <h3 className="text-lg font-semibold mb-2 text-primary">Dados do Cliente</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="text" name="customerName" placeholder="Nome completo" value={currentOrder?.customerName || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
-                            <input type="tel" name="customerPhone" placeholder="Telefone" value={currentOrder?.customerPhone || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md"/>
-                            <input type="email" name="customerEmail" placeholder="E-mail" value={currentOrder?.customerEmail || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md col-span-2"/>
+                           <div>
+                                <label htmlFor="customerName" className="block text-sm font-medium text-gray-700">Nome completo</label>
+                                <input type="text" id="customerName" name="customerName" value={currentOrder?.customerName || ''} onChange={handleInputChange} className="mt-1 p-2 w-full border rounded-md" required/>
+                           </div>
+                           <div>
+                                <label htmlFor="customerPhone" className="block text-sm font-medium text-gray-700">Telefone</label>
+                                <input type="tel" id="customerPhone" name="customerPhone" value={currentOrder?.customerPhone || ''} onChange={handleInputChange} className="mt-1 p-2 w-full border rounded-md"/>
+                           </div>
+                            <div className="md:col-span-2">
+                                <label htmlFor="customerEmail" className="block text-sm font-medium text-gray-700">E-mail</label>
+                                <input type="email" id="customerEmail" name="customerEmail" value={currentOrder?.customerEmail || ''} onChange={handleInputChange} className="mt-1 p-2 w-full border rounded-md"/>
+                            </div>
                         </div>
                     </div>
                     
                     <div>
                         <h3 className="text-lg font-semibold mb-2 text-primary">Dados do Equipamento</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <select name="deviceType" value={currentOrder?.deviceType || 'Celular'} onChange={handleInputChange} className="p-2 w-full border rounded-md bg-white">
-                                <option>Celular</option>
-                                <option>Notebook</option>
-                            </select>
-                            <input type="text" name="deviceBrand" placeholder="Marca" value={currentOrder?.deviceBrand || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
-                            <input type="text" name="deviceModel" placeholder="Modelo" value={currentOrder?.deviceModel || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
-                            <input type="text" name="imeiOrSerial" placeholder="IMEI ou Nº de Série" value={currentOrder?.imeiOrSerial || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md"/>
-                            <textarea name="accessories" placeholder="Acessórios (ex: carregador, cabo, capa)" value={currentOrder?.accessories || ''} onChange={handleInputChange} rows={2} className="p-2 w-full border rounded-md col-span-2"></textarea>
+                             <div>
+                                <label htmlFor="deviceType" className="block text-sm font-medium text-gray-700">Tipo de Equipamento</label>
+                                <select id="deviceType" name="deviceType" value={currentOrder?.deviceType || 'Celular'} onChange={handleInputChange} className="mt-1 p-2 w-full border rounded-md bg-white">
+                                    <option>Celular</option>
+                                    <option>Notebook</option>
+                                </select>
+                             </div>
+                             <div>
+                                <label htmlFor="deviceBrand" className="block text-sm font-medium text-gray-700">Marca</label>
+                                <input type="text" id="deviceBrand" name="deviceBrand" value={currentOrder?.deviceBrand || ''} onChange={handleInputChange} className="mt-1 p-2 w-full border rounded-md" required/>
+                             </div>
+                             <div>
+                                <label htmlFor="deviceModel" className="block text-sm font-medium text-gray-700">Modelo</label>
+                                <input type="text" id="deviceModel" name="deviceModel" value={currentOrder?.deviceModel || ''} onChange={handleInputChange} className="mt-1 p-2 w-full border rounded-md" required/>
+                             </div>
+                             <div>
+                                <label htmlFor="imeiOrSerial" className="block text-sm font-medium text-gray-700">IMEI ou Nº de Série</label>
+                                <input type="text" id="imeiOrSerial" name="imeiOrSerial" value={currentOrder?.imeiOrSerial || ''} onChange={handleInputChange} className="mt-1 p-2 w-full border rounded-md"/>
+                             </div>
+                             <div className="md:col-span-2">
+                                <label htmlFor="accessories" className="block text-sm font-medium text-gray-700">Acessórios</label>
+                                <textarea id="accessories" name="accessories" placeholder="ex: carregador, cabo, capa" value={currentOrder?.accessories || ''} onChange={handleInputChange} rows={2} className="mt-1 p-2 w-full border rounded-md"></textarea>
+                             </div>
                         </div>
                     </div>
 
@@ -309,9 +334,18 @@ const ServiceOrders: React.FC = () => {
                         </div>
                         )}
                     </div>
-                    <textarea name="reportedProblem" placeholder="Problema Relatado pelo Cliente" value={currentOrder?.reportedProblem || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md" required></textarea>
-                    <textarea name="technicianNotes" placeholder="Observações do Técnico" value={currentOrder?.technicianNotes || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md"></textarea>
-                    <textarea name="partsUsed" placeholder="Peças Utilizadas" value={currentOrder?.partsUsed || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md"></textarea>
+                    <div>
+                        <label htmlFor="reportedProblem" className="block text-sm font-medium text-gray-700">Problema Relatado pelo Cliente</label>
+                        <textarea id="reportedProblem" name="reportedProblem" value={currentOrder?.reportedProblem || ''} onChange={handleInputChange} rows={3} className="mt-1 p-2 w-full border rounded-md" required></textarea>
+                    </div>
+                     <div>
+                        <label htmlFor="technicianNotes" className="block text-sm font-medium text-gray-700">Observações do Técnico</label>
+                        <textarea id="technicianNotes" name="technicianNotes" value={currentOrder?.technicianNotes || ''} onChange={handleInputChange} rows={3} className="mt-1 p-2 w-full border rounded-md"></textarea>
+                    </div>
+                     <div>
+                        <label htmlFor="partsUsed" className="block text-sm font-medium text-gray-700">Peças Utilizadas</label>
+                        <textarea id="partsUsed" name="partsUsed" value={currentOrder?.partsUsed || ''} onChange={handleInputChange} rows={3} className="mt-1 p-2 w-full border rounded-md"></textarea>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="md:col-span-1">
                             <label className="block text-sm font-medium text-gray-700">Custo Serviço (R$)</label>
@@ -361,14 +395,34 @@ const ServiceOrders: React.FC = () => {
                 </div>
             )}
             
-            {selectedOrder.mediaUrls && selectedOrder.mediaUrls.length > 0 && (
+            {selectedOrder.media && selectedOrder.media.length > 0 && (
                 <div>
-                    <strong>Mídia:</strong>
-                    <div className="grid grid-cols-3 gap-2 mt-1">
-                        {selectedOrder.mediaUrls.map((url, i) => <img key={i} src={url} alt={`Mídia ${i+1}`} className="w-full h-auto rounded" />)}
+                    <strong className="block mb-2">Mídia Anexada:</strong>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-1">
+                        {selectedOrder.media.map((mediaItem, i) => (
+                            <button 
+                                key={i} 
+                                onClick={() => setMediaPreview(mediaItem)} 
+                                className="group relative aspect-video border rounded-lg flex items-center justify-center bg-gray-100 hover:bg-gray-200 overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+                                aria-label={`Visualizar mídia ${i + 1}`}
+                            >
+                                {mediaItem.type === 'image' ? (
+                                    <img src={mediaItem.url} alt={`Mídia ${i + 1}`} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="text-center">
+                                        <Video className="w-10 h-10 text-gray-500 mx-auto" />
+                                        <span className="text-xs text-gray-600 mt-1 block">Vídeo</span>
+                                    </div>
+                                )}
+                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center transition-all">
+                                    <Eye size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                            </button>
+                        ))}
                     </div>
                 </div>
             )}
+
             <div className="pt-4 flex justify-end">
                  <button type="button" onClick={() => setIsViewModalOpen(false)} className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Fechar</button>
             </div>
@@ -434,6 +488,21 @@ const ServiceOrders: React.FC = () => {
            </div>
          </div>
       )}
+
+      {/* Media Preview Modal */}
+      <Modal isOpen={mediaPreview !== null} onClose={() => setMediaPreview(null)} title="Visualizador de Mídia" size="3xl">
+        {mediaPreview && (
+            <div className="bg-gray-900 rounded-lg p-2">
+                {mediaPreview.type === 'image' ? (
+                    <img src={mediaPreview.url} alt="Visualização da imagem" className="max-h-[75vh] w-auto mx-auto rounded-lg" />
+                ) : (
+                    <video src={mediaPreview.url} controls autoPlay className="max-h-[75vh] w-full rounded-lg focus:outline-none">
+                        Seu navegador não suporta a tag de vídeo.
+                    </video>
+                )}
+            </div>
+        )}
+      </Modal>
     </div>
   );
 };

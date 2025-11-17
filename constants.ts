@@ -1,11 +1,48 @@
-import { type Product, type Customer, type Company, type Invoice, type AccountTransaction, InvoiceStatus, type ServiceOrder, ServiceOrderStatus, type User } from './types';
+import { type Product, type Customer, type Company, type Invoice, type AccountTransaction, InvoiceStatus, type ServiceOrder, ServiceOrderStatus, type User, type Category, type Brand, type Supplier, type Coupon } from './types';
+
+export const MOCK_CATEGORIES: Category[] = [
+  { id: 'cat-1', name: 'Eletrônicos' },
+  { id: 'cat-2', name: 'Periféricos' },
+  { id: 'cat-3', name: 'Monitores' },
+  { id: 'cat-4', name: 'Móveis' },
+  { id: 'cat-5', name: 'Hardware' },
+];
+
+export const MOCK_BRANDS: Brand[] = [
+  { id: 'brand-1', name: 'UltraGear' },
+  { id: 'brand-2', name: 'Dell' },
+  { id: 'brand-3', name: 'Apple' },
+  { id: 'brand-4', name: 'Samsung' },
+  { id: 'brand-5', name: 'Lenovo' },
+];
+
+export const MOCK_SUPPLIERS: Supplier[] = [
+  { id: 'sup-1', name: 'Fornecedor Tech' },
+  { id: 'sup-2', name: 'Distribuidora Global' },
+  { id: 'sup-3', name: 'Importados & Cia' },
+];
 
 export const MOCK_PRODUCTS: Product[] = [
-  { id: '1', name: 'Notebook Gamer Pro', price: 7500, stock: 15, category: 'Eletrônicos', sku: 'NTB-GMR-001' },
-  { id: '2', name: 'Monitor Ultrawide 34"', price: 2800, stock: 30, category: 'Monitores', sku: 'MON-UW-034' },
-  { id: '3', name: 'Teclado Mecânico RGB', price: 450, stock: 50, category: 'Periféricos', sku: 'TEC-MEC-RGB' },
-  { id: '4', name: 'Mouse Sem Fio Ergonômico', price: 250, stock: 80, category: 'Periféricos', sku: 'MSE-ERG-WLS' },
-  { id: '5', name: 'Cadeira Gamer Confort', price: 1200, stock: 25, category: 'Móveis', sku: 'CAD-GMR-CFT' },
+  { 
+    id: '1', 
+    name: 'Notebook Gamer Pro', 
+    price: 7500, 
+    stock: 15, 
+    category: 'Eletrônicos', 
+    sku: 'NTB-GMR-001',
+    description: 'Notebook de alta performance para jogos e trabalho pesado, com processador i9, 32GB de RAM e SSD de 1TB.',
+    costPrice: 5800,
+    brand: 'UltraGear',
+    supplier: 'Fornecedor Tech',
+    ncm: '8471.30.19',
+    unit: 'UN',
+    weight: 2.5,
+    dimensions: { length: 38, width: 26, height: 2.5 }
+  },
+  { id: '2', name: 'Monitor Ultrawide 34"', price: 2800, stock: 30, category: 'Monitores', sku: 'MON-UW-034', brand: 'Samsung', supplier: 'Distribuidora Global' },
+  { id: '3', name: 'Teclado Mecânico RGB', price: 450, stock: 50, category: 'Periféricos', sku: 'TEC-MEC-RGB', brand: 'UltraGear', supplier: 'Fornecedor Tech' },
+  { id: '4', name: 'Mouse Sem Fio Ergonômico', price: 250, stock: 80, category: 'Periféricos', sku: 'MSE-ERG-WLS', brand: 'Dell', supplier: 'Distribuidora Global' },
+  { id: '5', name: 'Cadeira Gamer Confort', price: 1200, stock: 25, category: 'Móveis', sku: 'CAD-GMR-CFT', brand: 'UltraGear', supplier: 'Importados & Cia' },
 ];
 
 export const MOCK_CUSTOMERS: Customer[] = [
@@ -97,7 +134,7 @@ export const MOCK_ACCOUNTS_RECEIVABLE: AccountTransaction[] = [
 ];
 
 export const MOCK_SERVICE_ORDERS: ServiceOrder[] = [
-  { id: 'OS-001', customerName: 'João da Silva', customerPhone: '(11) 98765-4321', customerEmail: 'joao.silva@email.com', deviceType: 'Notebook', deviceBrand: 'Dell', deviceModel: 'Inspiron 15', imeiOrSerial: 'ABC123XYZ', accessories: 'Carregador original', reportedProblem: 'Não liga, sem sinal de vida.', technicianNotes: 'Troca da placa-mãe.', partsUsed: '1x Placa-mãe Dell P/N 12345', mediaUrls: ['https://via.placeholder.com/150/0000FF/FFFFFF?text=Foto+1', 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Foto+2'], status: ServiceOrderStatus.InProgress, creationDate: '2024-07-28', serviceCost: 150, partsCost: 300, totalValue: 450.00, publicLink: 'https://example.com/os/view/a1b2c3d4' },
+  { id: 'OS-001', customerName: 'João da Silva', customerPhone: '(11) 98765-4321', customerEmail: 'joao.silva@email.com', deviceType: 'Notebook', deviceBrand: 'Dell', deviceModel: 'Inspiron 15', imeiOrSerial: 'ABC123XYZ', accessories: 'Carregador original', reportedProblem: 'Não liga, sem sinal de vida.', technicianNotes: 'Troca da placa-mãe.', partsUsed: '1x Placa-mãe Dell P/N 12345', media: [{ type: 'image', url: 'https://via.placeholder.com/800x600/0000FF/FFFFFF?text=Placa+Danificada' }, { type: 'video', url: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4' }], status: ServiceOrderStatus.InProgress, creationDate: '2024-07-28', serviceCost: 150, partsCost: 300, totalValue: 450.00, publicLink: 'https://example.com/os/view/a1b2c3d4' },
   { id: 'OS-002', customerName: 'Maria Oliveira', customerPhone: '(21) 91234-5678', customerEmail: 'maria.o@email.com', deviceType: 'Celular', deviceBrand: 'Apple', deviceModel: 'iPhone 13', imeiOrSerial: '123456789012345', accessories: 'Apenas aparelho', reportedProblem: 'Tela trincada após queda.', status: ServiceOrderStatus.WaitingParts, creationDate: '2024-07-27', publicLink: 'https://example.com/os/view/e5f6g7h8', damageMarkers: [{ x: 50, y: 30, description: 'Tela trincada no canto superior' }] },
   { id: 'OS-003', customerName: 'Tech Solutions Ltda', customerPhone: '(31) 3333-4444', customerEmail: 'contato@techsolutions.com', deviceType: 'Notebook', deviceBrand: 'Lenovo', deviceModel: 'ThinkPad T490', imeiOrSerial: 'XYZ987ABC', accessories: 'Fonte de alimentação', reportedProblem: 'Lentidão excessiva e superaquecimento.', technicianNotes: 'Limpeza interna e troca da pasta térmica.', status: ServiceOrderStatus.Completed, creationDate: '2024-07-25', serviceCost: 250, totalValue: 250.00, publicLink: 'https://example.com/os/view/i9j0k1l2', dataConclusao: '2024-07-26', warrantyMonths: 3 },
   { id: 'OS-004', customerName: 'Carlos Pereira', customerPhone: '(41) 99999-8888', customerEmail: 'carlos.p@email.com', deviceType: 'Celular', deviceBrand: 'Samsung', deviceModel: 'Galaxy S22', imeiOrSerial: '543210987654321', accessories: 'Nenhum', reportedProblem: 'Bateria não segura carga.', status: ServiceOrderStatus.Pending, creationDate: '2024-07-29', publicLink: 'https://example.com/os/view/m3n4o5p6' },
@@ -177,6 +214,7 @@ export const MOCK_USERS: User[] = [
       shopeeCalc: true,
       settings: true,
       userManagement: true,
+      couponManagement: true,
     }
   },
   {
@@ -204,6 +242,7 @@ export const MOCK_USERS: User[] = [
       shopeeCalc: false,
       settings: false,
       userManagement: false,
+      couponManagement: false,
     }
   },
    {
@@ -231,6 +270,7 @@ export const MOCK_USERS: User[] = [
       shopeeCalc: false,
       settings: false,
       userManagement: false,
+      couponManagement: false,
     }
   },
   {
@@ -258,6 +298,52 @@ export const MOCK_USERS: User[] = [
       shopeeCalc: false,
       settings: false,
       userManagement: false,
+      couponManagement: false,
     }
   }
+];
+
+export const MOCK_COUPONS: Coupon[] = [
+    {
+        id: 'coupon-1',
+        code: 'PRIMEOFF30',
+        discount: 0.30,
+        status: 'active',
+        usageLimit: 100,
+        usedCount: 1,
+        usageHistory: [
+            {
+                customerName: 'João da Silva',
+                document: '123.456.789-00',
+                usedAt: '2024-07-28T10:00:00Z',
+            }
+        ]
+    },
+    {
+        id: 'coupon-2',
+        code: 'PRIMEOFF15',
+        discount: 0.15,
+        status: 'active',
+        usageLimit: 500,
+        usedCount: 120,
+        usageHistory: []
+    },
+    {
+        id: 'coupon-3',
+        code: 'PRIMEOFF10',
+        discount: 0.10,
+        status: 'paused',
+        usageLimit: 1000,
+        usedCount: 450,
+        usageHistory: []
+    },
+    {
+        id: 'coupon-4',
+        code: 'EXPIRED20',
+        discount: 0.20,
+        status: 'active',
+        usageLimit: 50,
+        usedCount: 50,
+        usageHistory: []
+    }
 ];

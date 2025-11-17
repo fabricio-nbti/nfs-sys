@@ -6,6 +6,18 @@ interface DanfeViewProps {
   invoice: Invoice;
 }
 
+const formatCurrencyForDanfe = (value: number | undefined | null): string => {
+  const numberValue = Number(value);
+  if (value === null || typeof value === 'undefined' || isNaN(numberValue) || numberValue === 0) {
+    return '';
+  }
+  // Formato sem símbolo, usado no DANFE
+  return new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(numberValue);
+};
+
 const DanfeView: React.FC<DanfeViewProps> = ({ invoice }) => {
     const barcodeUrl = `https://barcode.tec-it.com/barcode.ashx?data=${invoice.accessKey.replace(/\s/g, '')}&code=Code128&translate-esc=on`;
 
@@ -18,7 +30,7 @@ const DanfeView: React.FC<DanfeViewProps> = ({ invoice }) => {
     
     const TaxBox: React.FC<{title: string; value: number;}> = ({title, value}) => (
          <Box title={title} className="text-right">
-            {value > 0 ? value.toFixed(2) : ''}
+            {formatCurrencyForDanfe(value)}
         </Box>
     );
 
@@ -127,9 +139,9 @@ const DanfeView: React.FC<DanfeViewProps> = ({ invoice }) => {
                              <td className="p-1 border border-black text-center">{item.csosn}</td>
                              <td className="p-1 border border-black text-center">{item.cfop}</td>
                              <td className="p-1 border border-black text-center">{item.unit}</td>
-                             <td className="p-1 border border-black text-right">{item.quantity.toFixed(2)}</td>
-                             <td className="p-1 border border-black text-right">{item.unitPrice.toFixed(2)}</td>
-                             <td className="p-1 border border-black text-right">{item.totalPrice.toFixed(2)}</td>
+                             <td className="p-1 border border-black text-right">{formatCurrencyForDanfe(item.quantity)}</td>
+                             <td className="p-1 border border-black text-right">{formatCurrencyForDanfe(item.unitPrice)}</td>
+                             <td className="p-1 border border-black text-right">{formatCurrencyForDanfe(item.totalPrice)}</td>
                         </tr>
                     ))}
                 </tbody>

@@ -6,6 +6,9 @@
 
 
 
+
+
+
 import React, { useState, useMemo } from 'react';
 import { MOCK_IT_CONSULTING_SERVICE_ORDERS, MOCK_COMPANIES } from '../constants';
 import { type ServiceOrder, ServiceOrderStatus, type DamageMarker } from '../types';
@@ -37,6 +40,7 @@ const ITConsultingServiceOrders: React.FC = () => {
   const [currentOrder, setCurrentOrder] = useState<Partial<ServiceOrder> | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [selection, setSelection] = useState<string[]>([]);
+  const [mediaPreview, setMediaPreview] = useState<{ type: 'image' | 'video'; url: string; } | null>(null);
 
   const columns = [
     { header: 'Nº O.S.', accessor: 'id' as keyof ServiceOrder },
@@ -244,26 +248,47 @@ const ITConsultingServiceOrders: React.FC = () => {
                     <div>
                         <h3 className="text-lg font-semibold mb-2 text-primary">Dados do Cliente</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="text" name="customerName" placeholder="Nome da Empresa/Cliente" value={currentOrder?.customerName || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
-                            <input type="tel" name="customerPhone" placeholder="Telefone de Contato" value={currentOrder?.customerPhone || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md"/>
-                            <input type="email" name="customerEmail" placeholder="E-mail de Contato" value={currentOrder?.customerEmail || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md col-span-2"/>
+                            <div>
+                                <label htmlFor="customerNameIT" className="block text-sm font-medium text-gray-700">Nome da Empresa/Cliente</label>
+                                <input type="text" id="customerNameIT" name="customerName" value={currentOrder?.customerName || ''} onChange={handleInputChange} className="mt-1 p-2 w-full border rounded-md" required/>
+                            </div>
+                            <div>
+                                <label htmlFor="customerPhoneIT" className="block text-sm font-medium text-gray-700">Telefone de Contato</label>
+                                <input type="tel" id="customerPhoneIT" name="customerPhone" value={currentOrder?.customerPhone || ''} onChange={handleInputChange} className="mt-1 p-2 w-full border rounded-md"/>
+                            </div>
+                            <div className="md:col-span-2">
+                                <label htmlFor="customerEmailIT" className="block text-sm font-medium text-gray-700">E-mail de Contato</label>
+                                <input type="email" id="customerEmailIT" name="customerEmail" value={currentOrder?.customerEmail || ''} onChange={handleInputChange} className="mt-1 p-2 w-full border rounded-md"/>
+                            </div>
                         </div>
                     </div>
                     
                     <div>
                         <h3 className="text-lg font-semibold mb-2 text-primary">Dados do Atendimento</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <select name="deviceType" value={currentOrder?.deviceType || 'Suporte Técnico Remoto'} onChange={handleInputChange} className="p-2 w-full border rounded-md bg-white">
-                                <option>Suporte Técnico Remoto</option>
-                                <option>Manutenção de Servidor</option>
-                                <option>Gestão de Rede</option>
-                                <option>Backup em Nuvem</option>
-                                <option>Segurança da Informação</option>
-                                <option>Outro</option>
-                            </select>
-                            <input type="text" name="deviceBrand" placeholder="Sistema/Plataforma (ex: Windows Server, Azure)" value={currentOrder?.deviceBrand || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
-                            <input type="text" name="deviceModel" placeholder="Equipamento Afetado (ex: Servidor Dell)" value={currentOrder?.deviceModel || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md" required/>
-                            <input type="text" name="imeiOrSerial" placeholder="Nº do Contrato ou Chamado" value={currentOrder?.imeiOrSerial || ''} onChange={handleInputChange} className="p-2 w-full border rounded-md col-span-2"/>
+                            <div>
+                                <label htmlFor="deviceTypeIT" className="block text-sm font-medium text-gray-700">Tipo de Serviço</label>
+                                <select id="deviceTypeIT" name="deviceType" value={currentOrder?.deviceType || 'Suporte Técnico Remoto'} onChange={handleInputChange} className="mt-1 p-2 w-full border rounded-md bg-white">
+                                    <option>Suporte Técnico Remoto</option>
+                                    <option>Manutenção de Servidor</option>
+                                    <option>Gestão de Rede</option>
+                                    <option>Backup em Nuvem</option>
+                                    <option>Segurança da Informação</option>
+                                    <option>Outro</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label htmlFor="deviceBrandIT" className="block text-sm font-medium text-gray-700">Sistema/Plataforma</label>
+                                <input type="text" id="deviceBrandIT" name="deviceBrand" placeholder="ex: Windows Server, Azure" value={currentOrder?.deviceBrand || ''} onChange={handleInputChange} className="mt-1 p-2 w-full border rounded-md" required/>
+                            </div>
+                            <div className="md:col-span-2">
+                                <label htmlFor="deviceModelIT" className="block text-sm font-medium text-gray-700">Equipamento Afetado</label>
+                                <input type="text" id="deviceModelIT" name="deviceModel" placeholder="ex: Servidor Dell" value={currentOrder?.deviceModel || ''} onChange={handleInputChange} className="mt-1 p-2 w-full border rounded-md" required/>
+                            </div>
+                            <div className="md:col-span-2">
+                                <label htmlFor="imeiOrSerialIT" className="block text-sm font-medium text-gray-700">Nº do Contrato ou Chamado</label>
+                                <input type="text" id="imeiOrSerialIT" name="imeiOrSerial" value={currentOrder?.imeiOrSerial || ''} onChange={handleInputChange} className="mt-1 p-2 w-full border rounded-md"/>
+                            </div>
                         </div>
                     </div>
 
@@ -318,9 +343,18 @@ const ITConsultingServiceOrders: React.FC = () => {
                         </div>
                         )}
                     </div>
-                    <textarea name="reportedProblem" placeholder="Problema Relatado / Chamado" value={currentOrder?.reportedProblem || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md" required></textarea>
-                    <textarea name="technicianNotes" placeholder="Solução Aplicada / Horas Trabalhadas" value={currentOrder?.technicianNotes || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md"></textarea>
-                    <textarea name="partsUsed" placeholder="Licenças de Software / Hardware Utilizados" value={currentOrder?.partsUsed || ''} onChange={handleInputChange} rows={3} className="p-2 w-full border rounded-md"></textarea>
+                    <div>
+                        <label htmlFor="reportedProblemIT" className="block text-sm font-medium text-gray-700">Problema Relatado / Chamado</label>
+                        <textarea id="reportedProblemIT" name="reportedProblem" value={currentOrder?.reportedProblem || ''} onChange={handleInputChange} rows={3} className="mt-1 p-2 w-full border rounded-md" required></textarea>
+                    </div>
+                    <div>
+                        <label htmlFor="technicianNotesIT" className="block text-sm font-medium text-gray-700">Solução Aplicada / Horas Trabalhadas</label>
+                        <textarea id="technicianNotesIT" name="technicianNotes" value={currentOrder?.technicianNotes || ''} onChange={handleInputChange} rows={3} className="mt-1 p-2 w-full border rounded-md"></textarea>
+                    </div>
+                    <div>
+                        <label htmlFor="partsUsedIT" className="block text-sm font-medium text-gray-700">Licenças de Software / Hardware Utilizados</label>
+                        <textarea id="partsUsedIT" name="partsUsed" value={currentOrder?.partsUsed || ''} onChange={handleInputChange} rows={3} className="mt-1 p-2 w-full border rounded-md"></textarea>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="md:col-span-1">
                             <label className="block text-sm font-medium text-gray-700">Custo Serviço (R$)</label>
@@ -371,11 +405,31 @@ const ITConsultingServiceOrders: React.FC = () => {
                 </div>
             )}
 
-            {selectedOrder.mediaUrls && selectedOrder.mediaUrls.length > 0 && (
+            {/* FIX: Changed 'mediaUrls' to 'media' and improved rendering logic to support videos and a preview modal. */}
+            {selectedOrder.media && selectedOrder.media.length > 0 && (
                 <div>
-                    <strong>Anexos:</strong>
-                    <div className="grid grid-cols-3 gap-2 mt-1">
-                        {selectedOrder.mediaUrls.map((url, i) => <img key={i} src={url} alt={`Anexo ${i+1}`} className="w-full h-auto rounded" />)}
+                    <strong className="block mb-2">Anexos:</strong>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-1">
+                        {selectedOrder.media.map((mediaItem, i) => (
+                            <button 
+                                key={i} 
+                                onClick={() => setMediaPreview(mediaItem)} 
+                                className="group relative aspect-video border rounded-lg flex items-center justify-center bg-gray-100 hover:bg-gray-200 overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+                                aria-label={`Visualizar anexo ${i + 1}`}
+                            >
+                                {mediaItem.type === 'image' ? (
+                                    <img src={mediaItem.url} alt={`Anexo ${i + 1}`} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="text-center">
+                                        <Video className="w-10 h-10 text-gray-500 mx-auto" />
+                                        <span className="text-xs text-gray-600 mt-1 block">Vídeo</span>
+                                    </div>
+                                )}
+                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center transition-all">
+                                    <Eye size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                            </button>
+                        ))}
                     </div>
                 </div>
             )}
@@ -445,6 +499,21 @@ const ITConsultingServiceOrders: React.FC = () => {
            </div>
          </div>
       )}
+
+      {/* Media Preview Modal */}
+      <Modal isOpen={mediaPreview !== null} onClose={() => setMediaPreview(null)} title="Visualizador de Mídia" size="3xl">
+        {mediaPreview && (
+            <div className="bg-gray-900 rounded-lg p-2">
+                {mediaPreview.type === 'image' ? (
+                    <img src={mediaPreview.url} alt="Visualização da imagem" className="max-h-[75vh] w-auto mx-auto rounded-lg" />
+                ) : (
+                    <video src={mediaPreview.url} controls autoPlay className="max-h-[75vh] w-full rounded-lg focus:outline-none">
+                        Seu navegador não suporta a tag de vídeo.
+                    </video>
+                )}
+            </div>
+        )}
+      </Modal>
     </div>
   );
 };

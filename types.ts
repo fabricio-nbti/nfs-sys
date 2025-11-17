@@ -1,12 +1,41 @@
-export type Page = 'dashboard' | 'pdv' | 'products' | 'customers' | 'invoices' | 'invoice-issuing' | 'companies' | 'accounts-payable' | 'accounts-receivable' | 'service-orders' | 'electronics-service-orders' | 'automotive-service-orders' | 'security-service-orders' | 'solar-energy-service-orders' | 'it-consulting-service-orders' | 'settings' | 'shopee-calc' | 'user-management';
+export type Page = 'dashboard' | 'pdv' | 'products' | 'customers' | 'invoices' | 'invoice-issuing' | 'companies' | 'accounts-payable' | 'accounts-receivable' | 'service-orders' | 'electronics-service-orders' | 'automotive-service-orders' | 'security-service-orders' | 'solar-energy-service-orders' | 'it-consulting-service-orders' | 'settings' | 'shopee-calc' | 'user-management' | 'coupon-management';
+
+export interface Category {
+  id: string;
+  name: string;
+}
+
+export interface Brand {
+  id: string;
+  name: string;
+}
+
+export interface Supplier {
+  id: string;
+  name: string;
+}
 
 export interface Product {
   id: string;
   name: string;
+  description?: string;
   price: number;
+  costPrice?: number;
   stock: number;
   category: string;
   sku: string;
+  brand?: string;
+  supplier?: string;
+  ncm?: string;
+  cest?: string;
+  unit?: 'UN' | 'KG' | 'PC' | 'CX';
+  weight?: number; // in kg
+  dimensions?: {
+    length: number; // in cm
+    width: number;
+    height: number;
+  };
+  imageUrls?: string[];
 }
 
 export interface Customer {
@@ -113,7 +142,7 @@ export interface ServiceOrder {
   reportedProblem: string;
   technicianNotes?: string;
   partsUsed?: string;
-  mediaUrls?: string[];
+  media?: { type: 'image' | 'video'; url: string; }[];
   status: ServiceOrderStatus;
   creationDate: string;
   serviceCost?: number;
@@ -156,12 +185,16 @@ export interface UserPermissions {
   shopeeCalc: boolean;
   settings: boolean;
   userManagement: boolean;
+  couponManagement: boolean;
 }
 
 export interface User {
   id: string;
   name: string;
   email: string;
+  phone?: string;
+  document?: string; // CPF/CNPJ
+  address?: string;
   role: 'Admin' | 'Operador';
   permissions: UserPermissions;
   companyId?: string;
@@ -182,4 +215,18 @@ export interface ReceiptData {
   total: number;
   paymentMethod?: string;
   installments?: number;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  discount: number; // e.g., 0.30 for 30%
+  status: 'active' | 'paused';
+  usageLimit: number; // total number of times it can be used
+  usedCount: number;
+  usageHistory: {
+    customerName: string;
+    document: string;
+    usedAt: string;
+  }[];
 }

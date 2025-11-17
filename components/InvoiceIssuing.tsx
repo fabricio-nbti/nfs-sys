@@ -1,9 +1,21 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { MOCK_SERVICE_ORDERS, MOCK_ELECTRONICS_SERVICE_ORDERS, MOCK_AUTOMOTIVE_SERVICE_ORDERS, MOCK_SECURITY_SERVICE_ORDERS, MOCK_SOLAR_ENERGY_SERVICE_ORDERS, MOCK_IT_CONSULTING_SERVICE_ORDERS, MOCK_CUSTOMERS } from '../constants';
 import { ServiceOrderStatus, type ServiceOrder, type InvoiceItem, type AppSettings } from '../types';
 import { PlusCircle, Trash2, FileText } from 'lucide-react';
 
 type InvoiceType = 'NFe' | 'NFSe' | 'NFCe';
+
+const formatCurrency = (value: number | null | undefined): string => {
+  const numberValue = Number(value);
+  if (value === null || typeof value === 'undefined' || isNaN(numberValue)) {
+    return 'R$ 0,00';
+  }
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(numberValue);
+};
 
 interface InvoiceIssuingProps {
   settings: AppSettings;
@@ -94,7 +106,22 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
     }, [selectedOS, allServiceOrders]);
 
     const handleItemChange = (id: number, field: keyof InvoiceItem, value: string | number) => {
-        setItems(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+        setItems(prev => prev.map(item => {
+            if (item.id === id) {
+                const updatedItem = { ...item, [field]: value };
+                if (field === 'quantity' || field === 'unitPrice') {
+                    updatedItem.totalPrice = (Number(updatedItem.quantity) || 0) * (Number(updatedItem.unitPrice) || 0);
+                }
+                return updatedItem;
+            }
+            return item;
+        }));
+    };
+    
+    const handleItemCurrencyChange = (id: number, rawValue: string) => {
+        const onlyNumbers = rawValue.replace(/[^\d]/g, '');
+        const numericValue = onlyNumbers ? parseFloat(onlyNumbers) / 100 : 0;
+        handleItemChange(id, 'unitPrice', numericValue);
     };
 
     const addItem = () => {
@@ -118,7 +145,7 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
     };
 
     const subtotal = useMemo(() => 
-        items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0),
+        items.reduce((acc, item) => acc + item.totalPrice, 0),
     [items]);
     
     const handleIssueInvoice = () => {
@@ -126,7 +153,7 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
             alert('Por favor, preencha os dados do cliente e adicione pelo menos um item.');
             return;
         }
-        let message = `Simulação de Emissão de ${invoiceType}:\nCliente: ${customerName}\nTotal: R$ ${subtotal.toFixed(2)}`;
+        let message = `Simulação de Emissão de ${invoiceType}:\nCliente: ${customerName}\nTotal: ${formatCurrency(subtotal)}`;
         if (invoiceType === 'NFSe') {
             message += `\nCódigo Serviço: ${serviceCode}\nObs: ${serviceObservations}`;
         }
@@ -171,7 +198,7 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
                         <option value="">-- Emissão Avulsa --</option>
                         {completedServiceOrders.map(os => (
                             <option key={os.id} value={os.id}>
-                                O.S. {os.id} - {os.customerName} (R$ {os.totalValue?.toFixed(2)})
+                                O.S. {os.id} - {os.customerName} ({formatCurrency(os.totalValue)})
                             </option>
                         ))}
                     </select>
@@ -223,12 +250,11 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
                                     onChange={(e) => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)}
                                 />
                                 <input 
-                                    type="number" 
-                                    step="0.01"
+                                    type="text" 
                                     placeholder="Valor Unit." 
                                     className="col-span-3 p-2 border rounded-md text-sm"
-                                    value={item.unitPrice}
-                                     onChange={(e) => handleItemChange(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                                    value={formatCurrency(item.unitPrice) || ''}
+                                    onChange={(e) => handleItemCurrencyChange(item.id, e.target.value)}
                                 />
                                 <button onClick={() => removeItem(item.id)} className="col-span-1 text-red-500 hover:text-red-700 justify-self-center">
                                     <Trash2 size={18} />
@@ -255,7 +281,7 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
                     )}
 
                     <div className="mt-6 flex justify-end items-center">
-                        <span className="text-lg font-bold text-gray-800">Total: R$ {subtotal.toFixed(2)}</span>
+                        <span className="text-lg font-bold text-gray-800">Total: {formatCurrency(subtotal)}</span>
                     </div>
 
                     <div className="mt-8 border-t pt-6 flex justify-end">

@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { type ServiceOrder, type Company } from '../../types';
 
@@ -5,6 +6,17 @@ interface ServiceOrderReceiptViewProps {
   order: ServiceOrder;
   company: Company;
 }
+
+const formatCurrency = (value: number | null | undefined): string => {
+  const numberValue = Number(value);
+  if (value === null || typeof value === 'undefined' || isNaN(numberValue)) {
+    return 'A definir';
+  }
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(numberValue);
+};
 
 const ServiceOrderReceiptView: React.FC<ServiceOrderReceiptViewProps> = ({ order, company }) => {
 
@@ -60,9 +72,9 @@ const ServiceOrderReceiptView: React.FC<ServiceOrderReceiptViewProps> = ({ order
       <p className="my-1">{line}</p>
        
       <p className="font-bold mb-1">VALORES (SUJEITO A ALTERAÇÃO):</p>
-      <p><strong>Serviço:</strong> R$ {order.serviceCost?.toFixed(2) || '0.00'}</p>
-      <p><strong>Peças:</strong> R$ {order.partsCost?.toFixed(2) || '0.00'}</p>
-      <p><strong>Total:</strong> R$ {order.totalValue?.toFixed(2) || 'A definir'}</p>
+      <p><strong>Serviço:</strong> {formatCurrency(order.serviceCost)}</p>
+      <p><strong>Peças:</strong> {formatCurrency(order.partsCost)}</p>
+      <p><strong>Total:</strong> {formatCurrency(order.totalValue)}</p>
       
       <p className="my-1">{line}</p>
 

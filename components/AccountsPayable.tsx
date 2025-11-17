@@ -12,16 +12,29 @@ const statusColorMap: Record<string, string> = {
   'Overdue': 'bg-red-100 text-red-800',
 };
 
+const formatCurrency = (value: number | null | undefined): string => {
+  const numberValue = Number(value);
+  if (value === null || typeof value === 'undefined' || isNaN(numberValue)) {
+    return 'R$ 0,00';
+  }
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(numberValue);
+};
+
+
 const AccountsPayable: React.FC = () => {
   const [transactions, setTransactions] = useState<AccountTransaction[]>(MOCK_ACCOUNTS_PAYABLE);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Partial<AccountTransaction>>({});
   const [selection, setSelection] = useState<string[]>([]);
 
   const columns = [
     { header: 'Descrição', accessor: 'description' as keyof AccountTransaction },
     { header: 'Categoria', accessor: 'category' as keyof AccountTransaction },
     { header: 'Vencimento', accessor: 'dueDate' as keyof AccountTransaction },
-    { header: 'Valor', accessor: (item: AccountTransaction) => `R$ ${item.amount.toFixed(2)}` },
+    { header: 'Valor', accessor: (item: AccountTransaction) => formatCurrency(item.amount) },
     {
       header: 'Status',
       accessor: (item: AccountTransaction) => (
@@ -31,21 +44,39 @@ const AccountsPayable: React.FC = () => {
       ),
     },
   ];
+  
+  const openModal = () => {
+      setEditingTransaction({ status: 'Pending' });
+      setIsModalOpen(true);
+  }
 
   const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
     const newTransaction: AccountTransaction = {
       id: `PAY-${Date.now()}`,
-      description: formData.get('description') as string,
-      category: formData.get('category') as string,
-      dueDate: formData.get('dueDate') as string,
-      amount: parseFloat(formData.get('amount') as string),
+      description: editingTransaction.description || '',
+      category: editingTransaction.category || '',
+      dueDate: editingTransaction.dueDate || '',
+      amount: editingTransaction.amount || 0,
       status: 'Pending',
     };
     setTransactions(prev => [newTransaction, ...prev]);
     setIsModalOpen(false);
+    setEditingTransaction({});
   };
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      setEditingTransaction(prev => ({...prev, [name]: value }));
+  }
+
+  const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value: rawValue } = e.target;
+    const onlyNumbers = rawValue.replace(/[^\d]/g, '');
+    const numericValue = onlyNumbers ? parseFloat(onlyNumbers) / 100 : undefined;
+    setEditingTransaction(prev => ({ ...prev, [name]: numericValue }));
+  };
+
 
   const handleBulkMarkAsPaid = () => {
     setTransactions(prev => prev.map(t => selection.includes(t.id) ? { ...t, status: 'Paid', paymentDate: new Date().toISOString().split('T')[0] } : t));
@@ -57,7 +88,7 @@ const AccountsPayable: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Contas a Pagar</h1>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={openModal}
           className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors">
           <Plus size={20} className="mr-2" />
           Nova Conta
@@ -98,20 +129,20 @@ const AccountsPayable: React.FC = () => {
           <div className="space-y-4">
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descrição</label>
-              <input type="text" name="description" id="description" required className="mt-1 p-2 w-full border rounded-md"/>
+              <input type="text" name="description" id="description" value={editingTransaction.description || ''} onChange={handleInputChange} required className="mt-1 p-2 w-full border rounded-md"/>
             </div>
             <div>
               <label htmlFor="category" className="block text-sm font-medium text-gray-700">Categoria</label>
-              <input type="text" name="category" id="category" required className="mt-1 p-2 w-full border rounded-md"/>
+              <input type="text" name="category" id="category" value={editingTransaction.category || ''} onChange={handleInputChange} required className="mt-1 p-2 w-full border rounded-md"/>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700">Data de Vencimento</label>
-                <input type="date" name="dueDate" id="dueDate" required className="mt-1 p-2 w-full border rounded-md"/>
+                <input type="date" name="dueDate" id="dueDate" value={editingTransaction.dueDate || ''} onChange={handleInputChange} required className="mt-1 p-2 w-full border rounded-md"/>
               </div>
               <div>
                 <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Valor (R$)</label>
-                <input type="number" name="amount" id="amount" step="0.01" required className="mt-1 p-2 w-full border rounded-md"/>
+                <input type="text" name="amount" id="amount" value={formatCurrency(editingTransaction.amount)} onChange={handleCurrencyChange} required className="mt-1 p-2 w-full border rounded-md"/>
               </div>
             </div>
           </div>

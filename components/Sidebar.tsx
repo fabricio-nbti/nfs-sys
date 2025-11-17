@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { type Page, type AppSettings } from '../types';
-import { BarChart3, ShoppingCart, Receipt, Box, Users, Building, ArrowDownCircle, ArrowUpCircle, Menu, X, Wrench, Tv, Cog, Car, FileText, ShieldCheck, Sun, Network, Calculator, UserCog } from 'lucide-react';
+import { type Page, type AppSettings, type UserPermissions } from '../types';
+import { BarChart3, ShoppingCart, Receipt, Box, Users, Building, ArrowDownCircle, ArrowUpCircle, Menu, X, Wrench, Tv, Cog, Car, FileText, ShieldCheck, Sun, Network, Calculator, UserCog, LogOut, Tag } from 'lucide-react';
 
 interface SidebarProps {
   currentPage: Page;
   setCurrentPage: (page: Page) => void;
   settings: AppSettings;
+  handleLogout: () => void;
+  permissions: UserPermissions;
 }
 
 const NavItem: React.FC<{ icon: React.ReactNode; label: string; page: Page; currentPage: Page; setCurrentPage: (page: Page) => void; isCollapsed: boolean; }> = ({ icon, label, page, currentPage, setCurrentPage, isCollapsed }) => (
@@ -18,7 +20,7 @@ const NavItem: React.FC<{ icon: React.ReactNode; label: string; page: Page; curr
   </li>
 );
 
-const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings, handleLogout, permissions }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -42,8 +44,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings
   ];
 
   const adminItems = [
-    { icon: <UserCog size={20} />, label: 'Usuários', page: 'user-management' as Page, condition: true },
-    { icon: <Cog size={20} />, label: 'Configurações', page: 'settings' as Page, condition: true }
+    { icon: <UserCog size={20} />, label: 'Usuários', page: 'user-management' as Page, condition: permissions.userManagement },
+    { icon: <Tag size={20} />, label: 'Gerenciar Cupons', page: 'coupon-management' as Page, condition: permissions.couponManagement },
+    { icon: <Cog size={20} />, label: 'Configurações', page: 'settings' as Page, condition: permissions.settings }
   ];
 
   const sidebarContent = (
@@ -67,6 +70,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings
                 <NavItem key={item.page} {...item} currentPage={currentPage} setCurrentPage={setCurrentPage} isCollapsed={isCollapsed} />
             ))}
             </ul>
+            <hr className="border-t border-gray-700 my-2 mx-2"/>
+            <li
+              className="flex items-center p-3 my-1 rounded-lg cursor-pointer text-gray-300 hover:bg-sidebar-hover hover:text-white"
+              onClick={handleLogout}
+            >
+              <LogOut size={20} />
+              {!isCollapsed && <span className="ml-3 font-medium">Sair</span>}
+            </li>
         </div>
       </nav>
     </div>

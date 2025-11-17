@@ -16,6 +16,17 @@ import {
 } from '../constants';
 import { InvoiceStatus, type AppSettings, type ServiceOrder, ServiceOrderStatus, AccountTransaction } from '../types';
 
+const formatCurrency = (value: number | null | undefined): string => {
+  const numberValue = Number(value);
+  if (value === null || typeof value === 'undefined' || isNaN(numberValue)) {
+    return 'R$ 0,00';
+  }
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(numberValue);
+};
+
 const KpiCard: React.FC<{ title: string; value: string; icon: React.ReactNode; color: string; }> = ({ title, value, icon, color }) => (
   <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
     <div className={`p-3 rounded-full mr-4 ${color}`}>
@@ -169,10 +180,10 @@ const Dashboard: React.FC<DashboardProps> = ({ settings }) => {
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Dashboard Geral</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <KpiCard title="Faturamento do Mês" value={`R$ ${totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} icon={<DollarSign className="text-white" />} color="bg-green-500" />
-        <KpiCard title="Ticket Médio" value={`R$ ${ticketMedio.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} icon={<PieChartIcon className="text-white" />} color="bg-indigo-500" />
+        <KpiCard title="Faturamento do Mês" value={formatCurrency(totalRevenue)} icon={<DollarSign className="text-white" />} color="bg-green-500" />
+        <KpiCard title="Ticket Médio" value={formatCurrency(ticketMedio)} icon={<PieChartIcon className="text-white" />} color="bg-indigo-500" />
         <KpiCard title="Novos Clientes (Mês)" value={`${novosClientesMes}`} icon={<UserPlus className="text-white" />} color="bg-blue-500" />
-        <KpiCard title="Contas Vencidas" value={`R$ ${contasVencidasValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} icon={<FileWarning className="text-white" />} color="bg-red-500" />
+        <KpiCard title="Contas Vencidas" value={formatCurrency(contasVencidasValor)} icon={<FileWarning className="text-white" />} color="bg-red-500" />
         <KpiCard title="O.S. Concluídas" value={`${completedOrdersCount}`} icon={<CheckCircle className="text-white" />} color="bg-teal-500" />
         <KpiCard title="O.S. Pendentes" value={`${pendingOrdersCount}`} icon={<Clock className="text-white" />} color="bg-yellow-500" />
         <KpiCard title="Baixo Estoque (<10)" value={`${baixoEstoqueCount} produtos`} icon={<PackageSearch className="text-white" />} color="bg-orange-500" />
@@ -186,7 +197,7 @@ const Dashboard: React.FC<DashboardProps> = ({ settings }) => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis tickFormatter={(value) => `R$${(value as number / 1000)}k`}/>
-              <Tooltip formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} />
+              <Tooltip formatter={(value: number) => formatCurrency(value)} />
               <Legend />
               <Bar dataKey="revenue" fill="#4f46e5" name="Faturamento" />
             </BarChart>
@@ -251,7 +262,7 @@ const Dashboard: React.FC<DashboardProps> = ({ settings }) => {
                                 <p className="text-xs text-gray-500">Vence em: {new Date(acc.dueDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</p>
                             </div>
                             <span className={`text-sm font-bold ${acc.status === 'Overdue' ? 'text-red-600' : 'text-gray-800'}`}>
-                                R$ {acc.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                {formatCurrency(acc.amount)}
                             </span>
                         </div>
                     </li>

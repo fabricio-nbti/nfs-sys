@@ -1,5 +1,17 @@
+
 import React from 'react';
 import { type ReceiptData } from '../../types';
+
+const formatCurrency = (value: number | null | undefined): string => {
+  const numberValue = Number(value);
+  if (value === null || typeof value === 'undefined' || isNaN(numberValue)) {
+    return '0,00';
+  }
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(numberValue).replace('R$', '').trim();
+};
 
 interface ReceiptViewProps {
   receipt: ReceiptData;
@@ -54,8 +66,8 @@ const ReceiptView: React.FC<ReceiptViewProps> = ({ receipt }) => {
           <div key={index} className="flex justify-between">
             <span className="w-1/12">{item.quantity}</span>
             <span className="w-6/12 text-left truncate">{item.name}</span>
-            <span className="w-2/12 text-right">{item.unitPrice.toFixed(2)}</span>
-            <span className="w-3/12 text-right font-semibold">{item.totalPrice.toFixed(2)}</span>
+            <span className="w-2/12 text-right">{formatCurrency(item.unitPrice)}</span>
+            <span className="w-3/12 text-right font-semibold">{formatCurrency(item.totalPrice)}</span>
           </div>
         ))}
       </div>
@@ -73,15 +85,15 @@ const ReceiptView: React.FC<ReceiptViewProps> = ({ receipt }) => {
         <div className="border-t pt-1 space-y-1">
             <div className="flex justify-between">
               <span>Subtotal</span>
-              <span>R$ {receipt.subtotal.toFixed(2)}</span>
+              <span>R$ {formatCurrency(receipt.subtotal)}</span>
             </div>
              <div className="flex justify-between">
               <span>Impostos (simul.)</span>
-              <span>R$ {receipt.taxes.toFixed(2)}</span>
+              <span>R$ {formatCurrency(receipt.taxes)}</span>
             </div>
              <div className="flex justify-between font-bold text-sm">
               <span>TOTAL</span>
-              <span>R$ {receipt.total.toFixed(2)}</span>
+              <span>R$ {formatCurrency(receipt.total)}</span>
             </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { MOCK_PRODUCTS, MOCK_COMPANIES } from '../constants';
 import { type Product, type Company, type ReceiptData } from '../types';
@@ -178,11 +179,11 @@ const PDV: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [cart, selectedPaymentMethod, installments, amountReceived, total, isReceiptModalOpen]);
   
-  const paymentMethods: {name: PaymentMethod, icon: React.ReactNode}[] = [
-      { name: 'Dinheiro', icon: <DollarSign/> },
-      { name: 'Crédito', icon: <CreditCard/> },
-      { name: 'Débito', icon: <Landmark/> },
-      { name: 'Pix', icon: <QrCode/> },
+  const paymentMethods: {name: PaymentMethod, icon: React.ReactNode, shortcut: string}[] = [
+      { name: 'Dinheiro', icon: <DollarSign/>, shortcut: 'F3' },
+      { name: 'Crédito', icon: <CreditCard/>, shortcut: 'F4' },
+      { name: 'Débito', icon: <Landmark/>, shortcut: 'F5' },
+      { name: 'Pix', icon: <QrCode/>, shortcut: 'F6' },
   ];
 
   return (
@@ -257,9 +258,9 @@ const PDV: React.FC = () => {
             <span>{formatCurrency(total)}</span>
           </div>
           <div className="mb-4">
-              <h3 className="font-semibold text-center mb-2">Forma de Pagamento (F3-F6)</h3>
+              <h3 className="font-semibold text-center mb-2">Forma de Pagamento</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {paymentMethods.map(({ name, icon }) => (
+                {paymentMethods.map(({ name, icon, shortcut }) => (
                      <button 
                         key={name}
                         onClick={() => handlePaymentMethodSelect(name)}
@@ -270,7 +271,7 @@ const PDV: React.FC = () => {
                         }`}
                      >
                         {icon}
-                        <span className="mt-1">{name}</span>
+                        <span className="mt-1">{name} ({shortcut})</span>
                     </button>
                 ))}
               </div>

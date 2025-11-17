@@ -115,7 +115,7 @@ const Products: React.FC = () => {
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    const isNumeric = ['stock', 'weight'].includes(name);
+    const isNumeric = ['stock', 'weight', 'icmsRate', 'pisRate', 'cofinsRate'].includes(name);
 
     setEditingProduct(prev => (prev ? { ...prev, [name]: isNumeric ? (value === '' ? undefined : parseFloat(value)) : value } : null));
   };
@@ -602,7 +602,7 @@ const Products: React.FC = () => {
 
             <div className="border-t pt-4">
                 <h3 className="font-semibold text-gray-600 mb-2">Informações Fiscais</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label htmlFor="ncm" className="block text-sm font-medium text-gray-700">NCM</label>
                         <input type="text" id="ncm" name="ncm" value={editingProduct.ncm || ''} onChange={handleInputChange} className="mt-1 p-2 border rounded w-full"/>
@@ -610,6 +610,20 @@ const Products: React.FC = () => {
                     <div>
                         <label htmlFor="cest" className="block text-sm font-medium text-gray-700">CEST (opcional)</label>
                         <input type="text" id="cest" name="cest" value={editingProduct.cest || ''} onChange={handleInputChange} className="mt-1 p-2 border rounded w-full"/>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label htmlFor="icmsRate" className="block text-sm font-medium text-gray-700">Alíquota ICMS (%)</label>
+                        <input type="number" step="0.01" id="icmsRate" name="icmsRate" value={editingProduct.icmsRate || ''} onChange={handleInputChange} className="mt-1 p-2 border rounded w-full"/>
+                    </div>
+                    <div>
+                        <label htmlFor="pisRate" className="block text-sm font-medium text-gray-700">Alíquota PIS (%)</label>
+                        <input type="number" step="0.01" id="pisRate" name="pisRate" value={editingProduct.pisRate || ''} onChange={handleInputChange} className="mt-1 p-2 border rounded w-full"/>
+                    </div>
+                    <div>
+                        <label htmlFor="cofinsRate" className="block text-sm font-medium text-gray-700">Alíquota COFINS (%)</label>
+                        <input type="number" step="0.01" id="cofinsRate" name="cofinsRate" value={editingProduct.cofinsRate || ''} onChange={handleInputChange} className="mt-1 p-2 border rounded w-full"/>
                     </div>
                 </div>
             </div>

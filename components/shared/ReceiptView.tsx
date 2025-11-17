@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { type ReceiptData } from '../../types';
 
@@ -86,10 +87,6 @@ const ReceiptView: React.FC<ReceiptViewProps> = ({ receipt }) => {
             <div className="flex justify-between">
               <span>Subtotal</span>
               <span>R$ {formatCurrency(receipt.subtotal)}</span>
-            </div>
-             <div className="flex justify-between">
-              <span>Impostos (simul.)</span>
-              <span>R$ {formatCurrency(receipt.taxes)}</span>
             </div>
              <div className="flex justify-between font-bold text-sm">
               <span>TOTAL</span>

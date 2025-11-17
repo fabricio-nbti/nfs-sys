@@ -36,6 +36,9 @@ export interface Product {
     height: number;
   };
   imageUrls?: string[];
+  icmsRate?: number; // %
+  pisRate?: number; // %
+  cofinsRate?: number; // %
 }
 
 export interface Customer {
@@ -212,7 +215,6 @@ export interface ReceiptData {
     totalPrice: number;
   }[];
   subtotal: number;
-  taxes: number;
   total: number;
   paymentMethod?: string;
   installments?: number;

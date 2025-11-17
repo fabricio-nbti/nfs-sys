@@ -37,7 +37,10 @@ export const MOCK_PRODUCTS: Product[] = [
     ncm: '8471.30.19',
     unit: 'UN',
     weight: 2.5,
-    dimensions: { length: 38, width: 26, height: 2.5 }
+    dimensions: { length: 38, width: 26, height: 2.5 },
+    icmsRate: 18.00,
+    pisRate: 1.65,
+    cofinsRate: 7.60,
   },
   { id: '2', name: 'Monitor Ultrawide 34"', price: 2800, stock: 30, category: 'Monitores', sku: 'MON-UW-034', brand: 'Samsung', supplier: 'Distribuidora Global' },
   { id: '3', name: 'Teclado Mecânico RGB', price: 450, stock: 50, category: 'Periféricos', sku: 'TEC-MEC-RGB', brand: 'UltraGear', supplier: 'Fornecedor Tech' },
@@ -155,46 +158,26 @@ export const MOCK_AUTOMOTIVE_SERVICE_ORDERS: ServiceOrder[] = [
 export const MOCK_SECURITY_SERVICE_ORDERS: ServiceOrder[] = [
     { id: 'OSS-001', customerName: 'Condomínio Residencial Park', customerPhone: '(11) 3232-5566', customerEmail: 'sindico@condpark.com', deviceType: 'Sistema de CFTV', deviceBrand: 'Intelbras', deviceModel: 'Multi HD', imeiOrSerial: 'Rua das Flores, 100 - Bairro Jardim', accessories: 'Acesso ao telhado liberado', reportedProblem: 'Instalação de 8 novas câmeras nas áreas comuns e substituição do DVR antigo.', technicianNotes: 'DVR de 16 canais instalado. Passagem de cabos via eletrodutos existentes.', partsUsed: '1x DVR Intelbras 16ch, 8x Câmera Dome VHD 1220, 1x HD Purple 4TB, 200m Cabo Coaxial', status: ServiceOrderStatus.Completed, creationDate: '2024-07-29', serviceCost: 1200, partsCost: 2800, totalValue: 4000.00, publicLink: 'https://example.com/os/view/sec001', dataConclusao: '2024-07-29', warrantyMonths: 12, damageMarkers: [{ x: 50, y: 15, description: 'Ponto de câmera no poste'}] },
     { id: 'OSS-002', customerName: 'Mariana Costa', customerPhone: '(81) 98877-6655', customerEmail: 'mariana.c@email.com', deviceType: 'Alarme Monitorado', deviceBrand: 'JFL', deviceModel: 'Active 20', imeiOrSerial: 'Av. Boa Viagem, 3210, Apto 501', accessories: '', reportedProblem: 'Sensor de movimento da sala disparando em falso.', status: ServiceOrderStatus.InProgress, creationDate: '2024-07-28', publicLink: 'https://example.com/os/view/sec002' },
-    { id: 'OSS-003', customerName: 'Padaria Pão Quente', customerPhone: '(21) 2244-8899', customerEmail: 'contato@paoquente.com', deviceType: 'Cerca Elétrica', deviceBrand: 'Genno', deviceModel: 'Shock Premium', reportedProblem: 'Cerca não está energizada, central apitando erro.', status: ServiceOrderStatus.Pending, creationDate: '2024-07-30', publicLink: 'https://example.com/os/view/sec003' },
+    { id: 'OSS-003', customerName: 'Padaria Pão Quente', customerPhone: '(21) 2244-8899', customerEmail: 'contato@paoquente.com', deviceType: 'Cerca Elétrica', deviceBrand: 'Intelbras', deviceModel: 'ELC 5002', accessories: 'Haste e fiação', reportedProblem: 'Central de choque não está energizando um dos setores da cerca.', status: ServiceOrderStatus.Pending, creationDate: '2024-07-30', publicLink: 'https://example.com/os/view/sec003' },
 ];
 
 export const MOCK_SOLAR_ENERGY_SERVICE_ORDERS: ServiceOrder[] = [
-    { id: 'OSSOL-001', customerName: 'Residência Família Souza', customerPhone: '(31) 98765-1122', customerEmail: 'familia.souza@email.com', deviceType: 'Sistema Fotovoltaico On-Grid', deviceBrand: 'WEG / Canadian', deviceModel: '5kWp', imeiOrSerial: 'Rua dos Girassóis, 450, Belo Horizonte', accessories: 'Telhado cerâmico, acesso fácil', reportedProblem: 'Instalação completa de sistema de 5kWp com 10 painéis solares e homologação na concessionária.', technicianNotes: 'Inversor instalado na área de serviço. Cabeamento passado por duto externo.', partsUsed: '10x Painel Solar Canadian 500W, 1x Inversor WEG 5kW, Estrutura de fixação, String Box', status: ServiceOrderStatus.Completed, creationDate: '2024-07-29', serviceCost: 3500, partsCost: 18500, totalValue: 22000.00, publicLink: 'https://example.com/os/view/sol001', dataConclusao: '2024-07-29', warrantyMonths: 24, damageMarkers: [{x: 50, y: 50, description: 'Ponto de instalação do inversor'}] },
-    { id: 'OSSOL-002', customerName: 'Comércio Varejista ABC', customerPhone: '(11) 4545-9988', customerEmail: 'compras@varejoabc.com', deviceType: 'Manutenção Preventiva', deviceBrand: 'Fronius', deviceModel: 'Primo 10.0-1', imeiOrSerial: 'Av. Industrial, 1200, São Bernardo do Campo', accessories: '', reportedProblem: 'Inversor apresentando falha de comunicação com o portal e geração 20% abaixo do esperado.', status: ServiceOrderStatus.InProgress, creationDate: '2024-07-28', publicLink: 'https://example.com/os/view/sol002' },
-    { id: 'OSSOL-003', customerName: 'Sítio Recanto Verde', customerPhone: '(19) 99333-4455', customerEmail: 'sitio.verde@email.com', deviceType: 'Limpeza de Painéis', deviceBrand: 'Diversas', deviceModel: '30 painéis', reportedProblem: 'Agendar limpeza anual dos painéis solares para otimizar a geração.', status: ServiceOrderStatus.Pending, creationDate: '2024-07-30', publicLink: 'https://example.com/os/view/sol003' },
+    { id: 'OSSOL-001', customerName: 'Fazenda Sol Nascente', customerPhone: '(62) 99988-7766', customerEmail: 'contato@fazendasol.com', deviceType: 'Sistema Fotovoltaico On-Grid', deviceBrand: 'WEG', deviceModel: 'SIW500H', imeiOrSerial: 'Endereço: Zona Rural, Km 15', accessories: 'Projeto de 50kWp', reportedProblem: 'Instalação completa de sistema fotovoltaico para irrigação.', technicianNotes: '120 painéis instalados. Inversor configurado e conectado à rede.', partsUsed: '120x Painel Solar Jinko 450W, 1x Inversor WEG 50kW, Estruturas de fixação, Cabos', status: ServiceOrderStatus.Completed, creationDate: '2024-07-28', serviceCost: 25000, partsCost: 150000, totalValue: 175000.00, publicLink: 'https://example.com/os/view/sol001', dataConclusao: '2024-07-28', warrantyMonths: 12 },
+    { id: 'OSSOL-002', customerName: 'Sítio Recanto Verde', customerPhone: '(11) 98877-1122', customerEmail: 'recanto@email.com', deviceType: 'Limpeza de Painéis', deviceBrand: 'Canadian Solar', deviceModel: 'CS3W-450MS', imeiOrSerial: 'Endereço: Estrada dos Pinhais, 300', accessories: '', reportedProblem: 'Manutenção e limpeza periódica dos 20 painéis instalados.', status: ServiceOrderStatus.InProgress, creationDate: '2024-07-29', publicLink: 'https://example.com/os/view/sol002' },
 ];
 
 export const MOCK_IT_CONSULTING_SERVICE_ORDERS: ServiceOrder[] = [
-    { id: 'OSTI-001', customerName: 'Tech Solutions Ltda', customerPhone: '(31) 3333-4444', customerEmail: 'contato@techsolutions.com', deviceType: 'Manutenção de Servidor', deviceBrand: 'Windows Server', deviceModel: 'Servidor Dell PowerEdge R740', imeiOrSerial: 'Contrato MENSAL-001', accessories: 'Acesso remoto via AnyDesk fornecido', reportedProblem: 'Verificação mensal do servidor, aplicação de atualizações de segurança e checagem de logs de eventos.', technicianNotes: 'Windows Server atualizado. Logs sem eventos críticos. Performance estável.', partsUsed: 'N/A', status: ServiceOrderStatus.Completed, creationDate: '2024-07-29', serviceCost: 450, partsCost: 0, totalValue: 450.00, publicLink: 'https://example.com/os/view/ti001', dataConclusao: '2024-07-29', warrantyMonths: 0, damageMarkers: [{ x: 50, y: 25, description: 'Checar logs de eventos' }] },
-    { id: 'OSTI-002', customerName: 'Escritório de Advocacia Central', customerPhone: '(21) 2255-7788', customerEmail: 'ti@advcentral.com', deviceType: 'Suporte Técnico Remoto', deviceBrand: 'Office 365', deviceModel: 'Estação de Trabalho Dell', imeiOrSerial: 'CHAMADO-9876', accessories: '', reportedProblem: 'Usuário não consegue sincronizar arquivos do OneDrive na estação de trabalho nova.', status: ServiceOrderStatus.InProgress, creationDate: '2024-07-28', publicLink: 'https://example.com/os/view/ti002' },
-    { id: 'OSTI-003', customerName: 'Clínica Médica Bem Viver', customerPhone: '(11) 5050-6060', customerEmail: 'adm@clinicabemviver.com', deviceType: 'Gestão de Rede', deviceBrand: 'Ubiquiti UniFi', deviceModel: 'Switch US-48-500W', reportedProblem: 'Ponto de rede na recepção 2 não está funcionando. Possível problema no cabo ou na porta do switch.', status: ServiceOrderStatus.Pending, creationDate: '2024-07-30', publicLink: 'https://example.com/os/view/ti003' },
-];
-
-
-export const SALES_DATA = [
-    { name: 'Jan', revenue: 4000 },
-    { name: 'Fev', revenue: 3000 },
-    { name: 'Mar', revenue: 5000 },
-    { name: 'Abr', revenue: 4500 },
-    { name: 'Mai', revenue: 6000 },
-    { name: 'Jun', revenue: 5500 },
-    { name: 'Jul', revenue: 7000 },
-];
-
-export const CATEGORY_DATA = [
-    { name: 'Eletrônicos', value: 400 },
-    { name: 'Periféricos', value: 300 },
-    { name: 'Monitores', value: 200 },
-    { name: 'Móveis', value: 100 },
+    { id: 'OSTI-001', customerName: 'Advocacia & Associados', customerPhone: '(21) 2233-4455', customerEmail: 'ti@advassociados.com', deviceType: 'Manutenção de Servidor', deviceBrand: 'Dell', deviceModel: 'PowerEdge T440', imeiOrSerial: 'Contrato #2023-A45', accessories: 'Acesso remoto liberado', reportedProblem: 'Servidor de arquivos apresentando lentidão extrema e travamentos.', technicianNotes: 'Otimização do S.O. (Windows Server 2019), limpeza de discos e upgrade de memória RAM de 32GB para 64GB.', partsUsed: '2x Memória RAM 16GB DDR4 ECC', status: ServiceOrderStatus.Completed, creationDate: '2024-07-27', serviceCost: 800, partsCost: 1200, totalValue: 2000.00, publicLink: 'https://example.com/os/view/ti001', dataConclusao: '2024-07-27', warrantyMonths: 6 },
+    { id: 'OSTI-002', customerName: 'Comércio Varejista XYZ', customerPhone: '(31) 3344-5566', customerEmail: 'gerencia@varejoxyz.com', deviceType: 'Gestão de Rede', deviceBrand: 'Ubiquiti', deviceModel: 'Unifi', imeiOrSerial: 'Contrato #2024-B12', accessories: '', reportedProblem: 'Configuração de nova rede Wi-Fi para clientes e funcionários, com separação de VLANs e portal de autenticação.', status: ServiceOrderStatus.InProgress, creationDate: '2024-07-29', publicLink: 'https://example.com/os/view/ti002' },
 ];
 
 export const MOCK_USERS: User[] = [
   {
-    id: 'user-1',
-    name: 'Admin Geral',
+    id: 'user-admin',
+    name: 'Admin NFeSys',
     email: 'admin@nfesys.com',
     role: 'Admin',
-    companyId: undefined, // Admin geral não pertence a nenhuma empresa específica
+    companyId: '1',
     permissions: {
       dashboard: true,
       pdv: true,
@@ -219,8 +202,8 @@ export const MOCK_USERS: User[] = [
     }
   },
   {
-    id: 'user-2',
-    name: 'Vendedor da Minha Empresa',
+    id: 'user-operador',
+    name: 'Vendedor Loja',
     email: 'vendedor@minhaempresa.com',
     role: 'Operador',
     companyId: '1',
@@ -228,8 +211,8 @@ export const MOCK_USERS: User[] = [
       dashboard: true,
       pdv: true,
       invoiceIssuing: false,
-      invoices: false,
-      serviceOrders: false,
+      invoices: true,
+      serviceOrders: true,
       electronicsServiceOrders: false,
       automotiveServiceOrders: false,
       securityServiceOrders: false,
@@ -240,114 +223,43 @@ export const MOCK_USERS: User[] = [
       companies: false,
       accountsPayable: false,
       accountsReceivable: false,
-      shopeeCalc: false,
+      shopeeCalc: true,
       settings: false,
       userManagement: false,
       couponManagement: false,
       reports: false,
     }
-  },
-   {
-    id: 'user-3',
-    name: 'José Mecânico',
-    email: 'jose@oficina.com',
-    role: 'Operador',
-    companyId: '2',
-    permissions: {
-      dashboard: true,
-      pdv: false,
-      invoiceIssuing: true,
-      invoices: true,
-      serviceOrders: false,
-      electronicsServiceOrders: false,
-      automotiveServiceOrders: true,
-      securityServiceOrders: false,
-      solarEnergyServiceOrders: false,
-      itConsultingServiceOrders: false,
-      products: true,
-      customers: true,
-      companies: false,
-      accountsPayable: true,
-      accountsReceivable: true,
-      shopeeCalc: false,
-      settings: false,
-      userManagement: false,
-      couponManagement: false,
-      reports: true,
-    }
-  },
-  {
-    id: 'user-4',
-    name: 'Técnico da Minha Empresa',
-    email: 'tecnico@minhaempresa.com',
-    role: 'Operador',
-    companyId: '1',
-    permissions: {
-      dashboard: true,
-      pdv: false,
-      invoiceIssuing: true,
-      invoices: true,
-      serviceOrders: true,
-      electronicsServiceOrders: true,
-      automotiveServiceOrders: false,
-      securityServiceOrders: false,
-      solarEnergyServiceOrders: false,
-      itConsultingServiceOrders: true,
-      products: true,
-      customers: true,
-      companies: false,
-      accountsPayable: false,
-      accountsReceivable: false,
-      shopeeCalc: false,
-      settings: false,
-      userManagement: false,
-      couponManagement: false,
-      reports: true,
-    }
   }
 ];
 
 export const MOCK_COUPONS: Coupon[] = [
-    {
-        id: 'coupon-1',
-        code: 'PRIMEOFF30',
-        discount: 0.30,
-        status: 'active',
-        usageLimit: 100,
-        usedCount: 1,
-        usageHistory: [
-            {
-                customerName: 'João da Silva',
-                document: '123.456.789-00',
-                usedAt: '2024-07-28T10:00:00Z',
-            }
-        ]
-    },
-    {
-        id: 'coupon-2',
-        code: 'PRIMEOFF15',
-        discount: 0.15,
-        status: 'active',
-        usageLimit: 500,
-        usedCount: 120,
-        usageHistory: []
-    },
-    {
-        id: 'coupon-3',
-        code: 'PRIMEOFF10',
-        discount: 0.10,
-        status: 'paused',
-        usageLimit: 1000,
-        usedCount: 450,
-        usageHistory: []
-    },
-    {
-        id: 'coupon-4',
-        code: 'EXPIRED20',
-        discount: 0.20,
-        status: 'active',
-        usageLimit: 50,
-        usedCount: 50,
-        usageHistory: []
-    }
+  {
+    id: 'coupon-1',
+    code: 'BEMVINDO10',
+    discount: 0.10,
+    status: 'active',
+    usageLimit: 100,
+    usedCount: 23,
+    usageHistory: [
+      { customerName: 'João da Silva', document: '123.456.789-00', usedAt: '2024-07-20T10:00:00Z' }
+    ]
+  },
+  {
+    id: 'coupon-2',
+    code: 'CLIENTEVIP',
+    discount: 0.20,
+    status: 'active',
+    usageLimit: 20,
+    usedCount: 19,
+    usageHistory: []
+  },
+  {
+    id: 'coupon-3',
+    code: 'EXPIRADO',
+    discount: 0.50,
+    status: 'paused',
+    usageLimit: 5,
+    usedCount: 5,
+    usageHistory: []
+  }
 ];

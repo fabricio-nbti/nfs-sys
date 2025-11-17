@@ -36,8 +36,7 @@ const PDV: React.FC = () => {
 
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const taxes = subtotal * 0.09; // Simulação de imposto
-  const total = subtotal + taxes;
+  const total = subtotal;
 
   const addToCart = (product: Product) => {
     setCart(prevCart => {
@@ -119,7 +118,6 @@ const PDV: React.FC = () => {
         totalPrice: item.price * item.quantity
       })),
       subtotal: subtotal,
-      taxes: taxes,
       total: total,
       paymentMethod: selectedPaymentMethod,
       installments: selectedPaymentMethod === 'Crédito' ? installments || undefined : undefined,
@@ -248,10 +246,6 @@ const PDV: React.FC = () => {
           <div className="flex justify-between mb-2">
             <span className="text-gray-600">Subtotal</span>
             <span>{formatCurrency(subtotal)}</span>
-          </div>
-          <div className="flex justify-between mb-2">
-            <span className="text-gray-600">Impostos</span>
-            <span>{formatCurrency(taxes)}</span>
           </div>
           <div className="flex justify-between font-bold text-xl mb-4">
             <span>Total</span>

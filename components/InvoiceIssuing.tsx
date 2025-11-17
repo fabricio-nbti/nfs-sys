@@ -1,8 +1,7 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { MOCK_SERVICE_ORDERS, MOCK_ELECTRONICS_SERVICE_ORDERS, MOCK_AUTOMOTIVE_SERVICE_ORDERS, MOCK_SECURITY_SERVICE_ORDERS, MOCK_SOLAR_ENERGY_SERVICE_ORDERS, MOCK_IT_CONSULTING_SERVICE_ORDERS, MOCK_CUSTOMERS } from '../constants';
-import { ServiceOrderStatus, type ServiceOrder, type InvoiceItem, type AppSettings } from '../types';
-import { PlusCircle, Trash2, FileText } from 'lucide-react';
+import { ServiceOrderStatus, type ServiceOrder, type InvoiceItem, type AppSettings, type Company } from '../types';
+import { PlusCircle, Trash2, FileText, ShieldAlert } from 'lucide-react';
 
 type InvoiceType = 'NFe' | 'NFSe' | 'NFCe';
 
@@ -19,11 +18,13 @@ const formatCurrency = (value: number | null | undefined): string => {
 
 interface InvoiceIssuingProps {
   settings: AppSettings;
+  companies: Company[];
 }
 
-const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
+const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings, companies }) => {
     const [invoiceType, setInvoiceType] = useState<InvoiceType>('NFSe');
     const [selectedOS, setSelectedOS] = useState<string>('');
+    const [selectedIssuer, setSelectedIssuer] = useState<string>(companies.length > 0 ? companies[0].id : '');
     const [customerName, setCustomerName] = useState('');
     const [customerDoc, setCustomerDoc] = useState('');
     const [items, setItems] = useState<InvoiceItem[]>([]);
@@ -149,11 +150,23 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
     [items]);
     
     const handleIssueInvoice = () => {
+        const issuer = companies.find(c => c.id === selectedIssuer);
+        if (!issuer) {
+            alert('Por favor, selecione uma empresa emissora.');
+            return;
+        }
+
+        if (!issuer.hasCertificate) {
+            alert('A empresa emissora selecionada não possui um certificado digital válido. Por favor, faça o upload na página "Certificado Digital" antes de emitir notas.');
+            return;
+        }
+
         if (!customerName || items.length === 0) {
             alert('Por favor, preencha os dados do cliente e adicione pelo menos um item.');
             return;
         }
-        let message = `Simulação de Emissão de ${invoiceType}:\nCliente: ${customerName}\nTotal: ${formatCurrency(subtotal)}`;
+
+        let message = `Simulação de Emissão de ${invoiceType}:\nEmissor: ${issuer.name}\nCliente: ${customerName}\nTotal: ${formatCurrency(subtotal)}`;
         if (invoiceType === 'NFSe') {
             message += `\nCódigo Serviço: ${serviceCode}\nObs: ${serviceObservations}`;
         }
@@ -174,22 +187,46 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
         </button>
     );
 
+    const currentIssuer = companies.find(c => c.id === selectedIssuer);
+
     return (
         <div>
             <h1 className="text-3xl font-bold text-gray-800 mb-6">Emissão de Notas</h1>
             
             <div className="bg-white p-6 rounded-lg shadow-md">
-                <div className="mb-6">
-                    <h2 className="text-lg font-semibold mb-2 text-gray-600">1. Escolha o Tipo de Documento</h2>
-                    <div className="flex flex-wrap gap-2">
-                        {renderTypeButton('NFSe', 'NFSe (Serviço)')}
-                        {renderTypeButton('NFe', 'NFe (Produto)')}
-                        {renderTypeButton('NFCe', 'NFCe (Cupom)')}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h2 className="text-lg font-semibold mb-2 text-gray-600">1. Empresa Emissora</h2>
+                        <select
+                            value={selectedIssuer}
+                            onChange={(e) => setSelectedIssuer(e.target.value)}
+                            className="w-full p-2 border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                            {companies.map(c => (
+                                <option key={c.id} value={c.id}>
+                                    {c.name} ({c.document})
+                                </option>
+                            ))}
+                        </select>
+                         {!currentIssuer?.hasCertificate && (
+                            <div className="mt-2 flex items-center gap-2 text-sm text-yellow-700 bg-yellow-100 p-2 rounded-md">
+                                <ShieldAlert size={20} />
+                                <span>Atenção: Esta empresa não possui um certificado digital válido para emissão.</span>
+                            </div>
+                        )}
+                    </div>
+                     <div>
+                        <h2 className="text-lg font-semibold mb-2 text-gray-600">2. Escolha o Tipo de Documento</h2>
+                        <div className="flex flex-wrap gap-2">
+                            {renderTypeButton('NFSe', 'NFSe (Serviço)')}
+                            {renderTypeButton('NFe', 'NFe (Produto)')}
+                            {renderTypeButton('NFCe', 'NFCe (Cupom)')}
+                        </div>
                     </div>
                 </div>
 
                 <div className="mb-6">
-                     <h2 className="text-lg font-semibold mb-2 text-gray-600">2. Puxar Dados de O.S. (Opcional)</h2>
+                     <h2 className="text-lg font-semibold mb-2 text-gray-600">3. Puxar Dados de O.S. (Opcional)</h2>
                     <select
                         value={selectedOS}
                         onChange={(e) => setSelectedOS(e.target.value)}
@@ -205,7 +242,7 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
                 </div>
                 
                 <div className="border-t pt-6">
-                    <h2 className="text-lg font-semibold mb-4 text-gray-600">3. Preencha os Dados da Nota</h2>
+                    <h2 className="text-lg font-semibold mb-4 text-gray-600">4. Preencha os Dados da Nota</h2>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div className="md:col-span-2">
@@ -287,7 +324,8 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings }) => {
                     <div className="mt-8 border-t pt-6 flex justify-end">
                         <button 
                             onClick={handleIssueInvoice}
-                            className="bg-secondary text-white px-6 py-3 rounded-lg flex items-center hover:bg-emerald-700 transition-colors font-bold"
+                            disabled={!currentIssuer?.hasCertificate}
+                            className="bg-secondary text-white px-6 py-3 rounded-lg flex items-center hover:bg-emerald-700 transition-colors font-bold disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
                             <FileText size={20} className="mr-2"/>
                             Emitir {invoiceType}

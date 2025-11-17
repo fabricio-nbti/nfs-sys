@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { type Page, type AppSettings, type UserPermissions } from '../types';
-import { BarChart3, ShoppingCart, Receipt, Box, Users, Building, ArrowDownCircle, ArrowUpCircle, Menu, X, Wrench, Tv, Cog, Car, FileText, ShieldCheck, Sun, Network, Calculator, UserCog, LogOut, Tag, AreaChart } from 'lucide-react';
+import { BarChart3, ShoppingCart, Receipt, Box, Users, Building, ArrowDownCircle, ArrowUpCircle, Menu, X, Wrench, Tv, Cog, Car, FileText, ShieldCheck, Sun, Network, Calculator, UserCog, LogOut, Tag, AreaChart, Shield } from 'lucide-react';
 
 interface SidebarProps {
   currentPage: Page;
@@ -8,6 +8,8 @@ interface SidebarProps {
   settings: AppSettings;
   handleLogout: () => void;
   permissions: UserPermissions;
+  isMobileOpen: boolean;
+  setIsMobileOpen: (isOpen: boolean) => void;
 }
 
 const NavItem: React.FC<{ icon: React.ReactNode; label: string; page: Page; currentPage: Page; setCurrentPage: (page: Page) => void; isCollapsed: boolean; }> = ({ icon, label, page, currentPage, setCurrentPage, isCollapsed }) => (
@@ -20,9 +22,8 @@ const NavItem: React.FC<{ icon: React.ReactNode; label: string; page: Page; curr
   </li>
 );
 
-const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings, handleLogout, permissions }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings, handleLogout, permissions, isMobileOpen, setIsMobileOpen }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const handlePageSelect = (page: Page) => {
     setCurrentPage(page);
@@ -43,6 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings
     { icon: <Box size={20} />, label: 'Produtos', page: 'products' as Page, condition: permissions.products },
     { icon: <Users size={20} />, label: 'Clientes', page: 'customers' as Page, condition: permissions.customers },
     { icon: <Building size={20} />, label: 'Empresas', page: 'companies' as Page, condition: permissions.companies },
+    { icon: <Shield size={20} />, label: 'Certificado Digital', page: 'digital-certificate' as Page, condition: permissions.digitalCertificate },
     { icon: <ArrowDownCircle size={20} />, label: 'Contas a Pagar', page: 'accounts-payable' as Page, condition: permissions.accountsPayable },
     { icon: <ArrowUpCircle size={20} />, label: 'Contas a Receber', page: 'accounts-receivable' as Page, condition: permissions.accountsReceivable },
     { icon: <AreaChart size={20} />, label: 'Relatórios', page: 'reports' as Page, condition: permissions.reports },
@@ -91,11 +93,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <button onClick={() => setIsMobileOpen(true)} className={`lg:hidden fixed top-4 left-4 z-50 bg-primary text-white p-2 rounded-md transition-opacity duration-300 ${isMobileOpen ? 'opacity-0 invisible' : 'opacity-100'}`}>
-        <Menu size={24} />
-      </button>
-
       {/* Mobile Sidebar */}
       <div className={`fixed inset-0 z-40 transform ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:hidden`}>
         <div className="relative w-64 h-full z-10">

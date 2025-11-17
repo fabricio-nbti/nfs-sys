@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
+import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import PDV from './components/PDV';
 import Products from './components/Products';
@@ -24,8 +25,9 @@ import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import Register from './components/Register';
 import FullRegister from './components/FullRegister';
-import { type Page, type AppSettings, type User } from './types';
-import { MOCK_USERS } from './constants';
+import DigitalCertificate from './components/DigitalCertificate';
+import { type Page, type AppSettings, type User, type Company } from './types';
+import { MOCK_USERS, MOCK_COMPANIES } from './constants';
 
 const App: React.FC = () => {
   const [appView, setAppView] = useState<'landing' | 'login' | 'register' | 'full-register' | 'app'>('landing');
@@ -33,6 +35,10 @@ const App: React.FC = () => {
   const [demoTimer, setDemoTimer] = useState<number | null>(null);
   const [planDetails, setPlanDetails] = useState<any | null>(null);
   const [usedCoupons, setUsedCoupons] = useState<string[]>([]);
+  const [companies, setCompanies] = useState<Company[]>(MOCK_COMPANIES);
+  const [prefilledCompany, setPrefilledCompany] = useState<Partial<Company> | null>(null);
+  const [mainCompany, setMainCompany] = useState<Company | null>(null);
+
 
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [settings, setSettings] = useState<AppSettings>({
@@ -44,6 +50,8 @@ const App: React.FC = () => {
     showSolarEnergy: true,
     showITConsulting: true,
   });
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
 
   useEffect(() => {
     return () => {
@@ -96,7 +104,26 @@ const App: React.FC = () => {
       setUsedCoupons(prev => [...prev, `${newUser.document}-${couponCode}`]);
     }
     
+    // Auto-fill main company data if a CNPJ was provided during registration
+    if (newUser.document && newUser.document.replace(/\D/g, '').length === 14) {
+      const newCompany: Company = {
+        id: `main-comp-${Date.now()}`,
+        name: newUser.name, // Fantasia - can be edited later
+        legalName: newUser.name, // Razão Social - can be edited later
+        document: newUser.document,
+        address: newUser.address || '',
+        stateRegistration: '',
+        hasCertificate: false,
+      };
+      setMainCompany(newCompany);
+    }
+    
     alert('Cadastro e assinatura concluídos com sucesso! Bem-vindo ao NFeSys.');
+  };
+
+  const handleCertificateData = (data: Partial<Company>) => {
+    setPrefilledCompany(data);
+    setCurrentPage('companies');
   };
 
   const renderPage = () => {
@@ -108,7 +135,7 @@ const App: React.FC = () => {
       case 'invoices':
         return <Invoices />;
       case 'invoice-issuing':
-        return settings.showInvoiceIssuing ? <InvoiceIssuing settings={settings} /> : <Dashboard settings={settings} />;
+        return settings.showInvoiceIssuing ? <InvoiceIssuing settings={settings} companies={companies} /> : <Dashboard settings={settings} />;
       case 'service-orders':
         return settings.showMobileRepair ? <ServiceOrders /> : <Dashboard settings={settings} />;
       case 'electronics-service-orders':
@@ -126,7 +153,9 @@ const App: React.FC = () => {
       case 'customers':
         return <Customers />;
       case 'companies':
-        return <Companies />;
+        return <Companies companies={companies} setCompanies={setCompanies} prefilledCompany={prefilledCompany} onPrefillConsumed={() => setPrefilledCompany(null)} />;
+      case 'digital-certificate':
+        return <DigitalCertificate companies={companies} onCompanyExtracted={handleCertificateData} setCurrentPage={setCurrentPage} />;
       case 'accounts-payable':
         return <AccountsPayable />;
       case 'accounts-receivable':
@@ -140,7 +169,12 @@ const App: React.FC = () => {
       case 'coupon-management':
         return <CouponManagement />;
       case 'settings':
-        return <Settings settings={settings} setSettings={setSettings} />;
+        return <Settings 
+                  settings={settings} 
+                  setSettings={setSettings}
+                  mainCompany={mainCompany}
+                  setMainCompany={setMainCompany}
+                />;
       default:
         return <Dashboard settings={settings} />;
     }
@@ -173,8 +207,15 @@ const App: React.FC = () => {
           settings={settings} 
           handleLogout={handleLogout}
           permissions={currentUser.permissions}
+          isMobileOpen={isMobileOpen}
+          setIsMobileOpen={setIsMobileOpen}
         />
         <div className="flex-1 flex flex-col overflow-hidden">
+          <Header 
+            currentUser={currentUser} 
+            companies={MOCK_COMPANIES} 
+            setIsMobileOpen={setIsMobileOpen} 
+          />
           <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background">
             <div className="container mx-auto px-6 py-8">
               {renderPage()}

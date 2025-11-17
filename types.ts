@@ -1,4 +1,4 @@
-export type Page = 'dashboard' | 'pdv' | 'products' | 'customers' | 'invoices' | 'invoice-issuing' | 'companies' | 'accounts-payable' | 'accounts-receivable' | 'service-orders' | 'electronics-service-orders' | 'automotive-service-orders' | 'security-service-orders' | 'solar-energy-service-orders' | 'it-consulting-service-orders' | 'settings' | 'shopee-calc' | 'user-management' | 'coupon-management' | 'reports';
+export type Page = 'dashboard' | 'pdv' | 'products' | 'customers' | 'invoices' | 'invoice-issuing' | 'companies' | 'accounts-payable' | 'accounts-receivable' | 'service-orders' | 'electronics-service-orders' | 'automotive-service-orders' | 'security-service-orders' | 'solar-energy-service-orders' | 'it-consulting-service-orders' | 'settings' | 'shopee-calc' | 'user-management' | 'coupon-management' | 'reports' | 'digital-certificate';
 
 export interface Category {
   id: string;
@@ -57,6 +57,8 @@ export interface Company {
   document: string; // CNPJ
   address: string;
   stateRegistration?: string; // Inscrição Estadual
+  hasCertificate?: boolean;
+  certificateExpires?: string;
 }
 
 export enum InvoiceStatus {
@@ -97,12 +99,12 @@ export interface Invoice {
     valueICMS: number;
     baseST: number;
     valueST: number;
-    valueIPI: number;
-    valuePIS: number;
-    valueCOFINS: number;
     valueFrete: number;
     valueSeguro: number;
     outrasDespesas: number;
+    valueIPI: number;
+    valuePIS: number;
+    valueCOFINS: number;
   };
 }
 
@@ -183,6 +185,7 @@ export interface UserPermissions {
   products: boolean;
   customers: boolean;
   companies: boolean;
+  digitalCertificate: boolean;
   accountsPayable: boolean;
   accountsReceivable: boolean;
   shopeeCalc: boolean;

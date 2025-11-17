@@ -20,13 +20,13 @@ const permissionLabels: Record<keyof UserPermissions, string> = {
   products: 'Produtos',
   customers: 'Clientes',
   companies: 'Empresas',
+  digitalCertificate: 'Certificado Digital',
   accountsPayable: 'Contas a Pagar',
   accountsReceivable: 'Contas a Receber',
   shopeeCalc: 'Calculadora Shopee',
   settings: 'Configurações',
   userManagement: 'Gerenciar Usuários',
   couponManagement: 'Gerenciar Cupons',
-  // FIX: Added missing 'reports' property to match the UserPermissions type.
   reports: 'Relatórios',
 };
 

@@ -55,9 +55,9 @@ export const MOCK_CUSTOMERS: Customer[] = [
 ];
 
 export const MOCK_COMPANIES: Company[] = [
-  { id: '1', name: 'Minha Empresa MEI', legalName: 'Minha Empresa de Tecnologia MEI', document: '99.888.777/0001-66', address: 'Rua Principal, 123, Centro, São Paulo, SP - 01001-000', stateRegistration: '111.222.333.444' },
-  { id: '2', name: 'Oficina do Zé', legalName: 'José Auto Peças Ltda', document: '11.222.333/0001-44', address: 'Av. das Nações, 200, Campinas, SP - 13010-000', stateRegistration: '555.666.777.888' },
-  { id: '3', name: 'Solar Energy Solutions', legalName: 'Solar Energy Instalações Ltda', document: '44.555.666/0001-22', address: 'Rua do Sol, 999, Recife, PE - 50030-000', stateRegistration: '999.888.777.666' }
+  { id: '1', name: 'Minha Empresa MEI', legalName: 'Minha Empresa de Tecnologia MEI', document: '99.888.777/0001-66', address: 'Rua Principal, 123, Centro, São Paulo, SP - 01001-000', stateRegistration: '111.222.333.444', hasCertificate: true, certificateExpires: '2025-07-30' },
+  { id: '2', name: 'Oficina do Zé', legalName: 'José Auto Peças Ltda', document: '11.222.333/0001-44', address: 'Av. das Nações, 200, Campinas, SP - 13010-000', stateRegistration: '555.666.777.888', hasCertificate: false },
+  { id: '3', name: 'Solar Energy Solutions', legalName: 'Solar Energy Instalações Ltda', document: '44.555.666/0001-22', address: 'Rua do Sol, 999, Recife, PE - 50030-000', stateRegistration: '999.888.777.666', hasCertificate: false }
 ];
 
 const mockIssuer = MOCK_COMPANIES[0];
@@ -192,6 +192,7 @@ export const MOCK_USERS: User[] = [
       products: true,
       customers: true,
       companies: true,
+      digitalCertificate: true,
       accountsPayable: true,
       accountsReceivable: true,
       shopeeCalc: true,
@@ -221,6 +222,7 @@ export const MOCK_USERS: User[] = [
       products: true,
       customers: true,
       companies: false,
+      digitalCertificate: false,
       accountsPayable: false,
       accountsReceivable: false,
       shopeeCalc: true,

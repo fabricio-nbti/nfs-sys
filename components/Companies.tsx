@@ -1,18 +1,24 @@
-
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { flushSync } from 'react-dom';
-import { MOCK_COMPANIES } from '../constants';
 import { type Company } from '../types';
 import { DataTable } from './shared/DataTable';
-import { Plus, Edit, Trash2, UploadCloud, Printer } from 'lucide-react';
+import { Plus, Edit, Trash2, UploadCloud, Printer, ShieldCheck, ShieldAlert } from 'lucide-react';
 import Modal from './shared/Modal';
 
-const Companies: React.FC = () => {
-  const [companies, setCompanies] = useState<Company[]>(MOCK_COMPANIES);
+interface CompaniesProps {
+  companies: Company[];
+  setCompanies: React.Dispatch<React.SetStateAction<Company[]>>;
+  prefilledCompany: Partial<Company> | null;
+  onPrefillConsumed: () => void;
+}
+
+const Companies: React.FC<CompaniesProps> = ({ companies, setCompanies, prefilledCompany, onPrefillConsumed }) => {
   const [selection, setSelection] = useState<string[]>([]);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [printableContent, setPrintableContent] = useState<React.ReactNode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCompany, setEditingCompany] = useState<Partial<Company> | null>(null);
 
    const availableColumnsForPrint = [
     { key: 'name', label: 'Nome Fantasia' },
@@ -29,12 +35,76 @@ const Companies: React.FC = () => {
     address: true,
   });
 
+  useEffect(() => {
+    if (prefilledCompany) {
+      openModal(prefilledCompany);
+      onPrefillConsumed();
+    }
+  }, [prefilledCompany]);
+
+
   const columns = [
-    { header: 'Nome Fantasia', accessor: 'name' as keyof Company },
+    { 
+      header: 'Nome Fantasia', 
+      accessor: (item: Company) => (
+        <div className="flex items-center gap-2">
+          {item.hasCertificate ? (
+            <span title={`Certificado válido até ${item.certificateExpires ? new Date(item.certificateExpires).toLocaleDateString('pt-BR') : 'N/A'}`}>
+              <ShieldCheck size={18} className="text-green-500" />
+            </span>
+          ) : (
+            <span title="Certificado pendente">
+              <ShieldAlert size={18} className="text-yellow-500" />
+            </span>
+          )}
+          <span>{item.name}</span>
+        </div>
+      )
+    },
     { header: 'Razão Social', accessor: 'legalName' as keyof Company },
     { header: 'CNPJ', accessor: 'document' as keyof Company },
     { header: 'Endereço', accessor: 'address' as keyof Company },
   ];
+
+  const openModal = (company: Partial<Company> | null) => {
+    setEditingCompany(company ? { ...company } : {});
+    setIsModalOpen(true);
+  };
+  
+  const validateCNPJ = (cnpj: string | undefined): boolean => {
+    if (!cnpj) return false;
+    const cleaned = cnpj.replace(/[^\d]/g, ''); // Remove formatação
+    return cleaned.length === 14;
+  };
+
+  const handleSave = () => {
+    if (!editingCompany?.name || !editingCompany?.legalName || !editingCompany.document) {
+      alert("Nome Fantasia, Razão Social e CNPJ são obrigatórios.");
+      return;
+    }
+    
+    if (!validateCNPJ(editingCompany.document)) {
+      alert("O CNPJ inserido é inválido. Por favor, verifique o número do documento (deve conter 14 dígitos).");
+      return;
+    }
+
+    if (editingCompany.id) { // Update
+      setCompanies(prev => prev.map(c => c.id === editingCompany.id ? editingCompany as Company : c));
+    } else { // Create
+      const newCompany: Company = {
+        id: `comp-${Date.now()}`,
+        ...editingCompany,
+      } as Company;
+      setCompanies(prev => [newCompany, ...prev]);
+    }
+    setIsModalOpen(false);
+    setEditingCompany(null);
+  };
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditingCompany(prev => prev ? { ...prev, [name]: value } : null);
+  };
 
   const handleImportClick = () => fileInputRef.current?.click();
 
@@ -170,13 +240,13 @@ const Companies: React.FC = () => {
               <Printer size={20} className="mr-2" />
               Imprimir Lista
             </button>
-            <button className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors">
+            <button onClick={() => openModal(null)} className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors">
               <Plus size={20} className="mr-2" />
               Nova Empresa
             </button>
         </div>
       </div>
-      <p className="text-gray-600 mb-4 no-print">Gerencie as empresas emissoras de notas fiscais. É necessário configurar o certificado digital no backend para cada empresa.</p>
+      <p className="text-gray-600 mb-4 no-print">Gerencie as empresas emissoras de notas fiscais. O certificado digital é obrigatório para emissão de notas.</p>
 
       <div className="no-print">
         <DataTable<Company>
@@ -186,12 +256,30 @@ const Companies: React.FC = () => {
           onSelectionChange={setSelection}
           renderActions={(item) => (
             <div className="flex space-x-2">
-              <button className="text-yellow-600 hover:text-yellow-900"><Edit size={18} /></button>
+              <button onClick={() => openModal(item)} className="text-yellow-600 hover:text-yellow-900"><Edit size={18} /></button>
               <button className="text-red-600 hover:text-red-900"><Trash2 size={18} /></button>
             </div>
           )}
         />
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingCompany?.id ? "Editar Empresa" : "Cadastrar Empresa"}>
+         {editingCompany && (
+            <div className="space-y-4">
+               <input type="text" name="name" value={editingCompany.name || ''} onChange={handleInputChange} placeholder="Nome Fantasia" className="p-2 w-full border rounded-md" required />
+               <input type="text" name="legalName" value={editingCompany.legalName || ''} onChange={handleInputChange} placeholder="Razão Social" className="p-2 w-full border rounded-md" required />
+               {/* FIX: Changed maxLength from string to number to satisfy TypeScript type checking. */}
+               <input type="text" name="document" value={editingCompany.document || ''} onChange={handleInputChange} placeholder="CNPJ" className="p-2 w-full border rounded-md" required maxLength={18} />
+               <input type="text" name="address" value={editingCompany.address || ''} onChange={handleInputChange} placeholder="Endereço Completo" className="p-2 w-full border rounded-md" required />
+               <input type="text" name="stateRegistration" value={editingCompany.stateRegistration || ''} onChange={handleInputChange} placeholder="Inscrição Estadual" className="p-2 w-full border rounded-md" />
+            
+              <div className="mt-6 flex justify-end">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg mr-2 hover:bg-gray-300">Cancelar</button>
+                  <button type="button" onClick={handleSave} className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Salvar</button>
+              </div>
+            </div>
+         )}
+       </Modal>
 
       <Modal isOpen={isPrintModalOpen} onClose={() => setIsPrintModalOpen(false)} title="Selecionar Colunas para Impressão">
         <div className="space-y-2">

@@ -216,6 +216,8 @@ export interface ReceiptData {
   total: number;
   paymentMethod?: string;
   installments?: number;
+  amountReceived?: number;
+  change?: number;
 }
 
 export interface Coupon {

@@ -96,6 +96,19 @@ const ReceiptView: React.FC<ReceiptViewProps> = ({ receipt }) => {
               <span>R$ {formatCurrency(receipt.total)}</span>
             </div>
         </div>
+
+        {receipt.paymentMethod === 'Dinheiro' && (receipt.amountReceived || receipt.amountReceived === 0) && (
+          <div className="border-t pt-1 mt-1 space-y-1">
+            <div className="flex justify-between">
+              <span>Valor Recebido</span>
+              <span>R$ {formatCurrency(receipt.amountReceived)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Troco</span>
+              <span>R$ {formatCurrency(receipt.change)}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <p className="my-1">{line}</p>

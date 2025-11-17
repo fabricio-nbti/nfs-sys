@@ -1,15 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MOCK_PRODUCTS, MOCK_COMPANIES } from '../constants';
 import { type Product, type Company, type ReceiptData } from '../types';
-import { PlusCircle, MinusCircle, XCircle, Search, CreditCard, Landmark, QrCode, Printer, X } from 'lucide-react';
+import { PlusCircle, MinusCircle, XCircle, Search, CreditCard, Landmark, QrCode, Printer, X, DollarSign, Image as ImageIcon } from 'lucide-react';
 import ReceiptView from './shared/ReceiptView';
 
 interface CartItem extends Product {
   quantity: number;
 }
 
-type PaymentMethod = 'Crédito' | 'Débito' | 'Pix';
+type PaymentMethod = 'Crédito' | 'Débito' | 'Pix' | 'Dinheiro';
 
 const formatCurrency = (value: number | null | undefined): string => {
   const numberValue = Number(value);
@@ -29,7 +29,14 @@ const PDV: React.FC = () => {
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
   const [installments, setInstallments] = useState<number | null>(null);
+  const [amountReceived, setAmountReceived] = useState<number | ''>('');
+  const [change, setChange] = useState<number>(0);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
+
+  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const taxes = subtotal * 0.09; // Simulação de imposto
+  const total = subtotal + taxes;
 
   const addToCart = (product: Product) => {
     setCart(prevCart => {
@@ -56,14 +63,30 @@ const PDV: React.FC = () => {
   };
 
   const filteredProducts = MOCK_PRODUCTS.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const taxes = subtotal * 0.09; // Simulação de imposto
-  const total = subtotal + taxes;
 
   const handlePaymentMethodSelect = (name: PaymentMethod) => {
       setSelectedPaymentMethod(name);
-      setInstallments(null); // Reseta as parcelas ao trocar de método
+      setInstallments(null);
+      setAmountReceived('');
+      setChange(0);
+  };
+
+  const handleAmountReceivedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '') {
+        setAmountReceived('');
+        setChange(0);
+        return;
+    }
+    const numericValue = parseFloat(value);
+    if (!isNaN(numericValue)) {
+        setAmountReceived(numericValue);
+        if (numericValue >= total) {
+            setChange(numericValue - total);
+        } else {
+            setChange(0);
+        }
+    }
   };
 
   const finalizeSale = () => {
@@ -77,6 +100,10 @@ const PDV: React.FC = () => {
     }
      if (selectedPaymentMethod === 'Crédito' && !installments) {
         alert("Por favor, selecione o número de parcelas.");
+        return;
+    }
+    if (selectedPaymentMethod === 'Dinheiro' && (amountReceived === '' || Number(amountReceived) < total)) {
+        alert("O valor recebido deve ser maior ou igual ao total da venda.");
         return;
     }
     
@@ -95,6 +122,8 @@ const PDV: React.FC = () => {
       total: total,
       paymentMethod: selectedPaymentMethod,
       installments: selectedPaymentMethod === 'Crédito' ? installments || undefined : undefined,
+      amountReceived: selectedPaymentMethod === 'Dinheiro' ? Number(amountReceived) : undefined,
+      change: selectedPaymentMethod === 'Dinheiro' ? change : undefined,
     };
 
     setReceiptData(newReceiptData);
@@ -107,13 +136,50 @@ const PDV: React.FC = () => {
     setCart([]); // Limpa o carrinho após fechar o modal
     setSelectedPaymentMethod(null); // Limpa a forma de pagamento
     setInstallments(null);
+    setAmountReceived('');
+    setChange(0);
   };
 
   const handlePrint = () => {
     window.print();
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+        switch(e.key) {
+            case 'F1':
+                e.preventDefault();
+                searchInputRef.current?.focus();
+                break;
+            case 'F2':
+                e.preventDefault();
+                const canFinalize = cart.length > 0 && selectedPaymentMethod &&
+                    (selectedPaymentMethod !== 'Crédito' || installments) &&
+                    (selectedPaymentMethod !== 'Dinheiro' || (amountReceived !== '' && Number(amountReceived) >= total));
+                if (canFinalize) {
+                    finalizeSale();
+                }
+                break;
+            case 'F3': e.preventDefault(); handlePaymentMethodSelect('Dinheiro'); break;
+            case 'F4': e.preventDefault(); handlePaymentMethodSelect('Crédito'); break;
+            case 'F5': e.preventDefault(); handlePaymentMethodSelect('Débito'); break;
+            case 'F6': e.preventDefault(); handlePaymentMethodSelect('Pix'); break;
+            case 'Escape':
+                if (isReceiptModalOpen) {
+                    e.preventDefault();
+                    handleCloseReceiptModal();
+                }
+                break;
+            default: break;
+        }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [cart, selectedPaymentMethod, installments, amountReceived, total, isReceiptModalOpen]);
   
   const paymentMethods: {name: PaymentMethod, icon: React.ReactNode}[] = [
+      { name: 'Dinheiro', icon: <DollarSign/> },
       { name: 'Crédito', icon: <CreditCard/> },
       { name: 'Débito', icon: <Landmark/> },
       { name: 'Pix', icon: <QrCode/> },
@@ -127,8 +193,9 @@ const PDV: React.FC = () => {
         <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input 
+                ref={searchInputRef}
                 type="text" 
-                placeholder="Buscar produto..."
+                placeholder="Buscar produto... (F1)"
                 className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -137,9 +204,16 @@ const PDV: React.FC = () => {
         <div className="flex-1 overflow-y-auto pr-2">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredProducts.map(product => (
-                <div key={product.id} className="border p-4 rounded-lg text-center cursor-pointer hover:shadow-lg hover:border-primary transition-all" onClick={() => addToCart(product)}>
-                <h3 className="font-semibold truncate">{product.name}</h3>
-                <p className="text-gray-600">{formatCurrency(product.price)}</p>
+                <div key={product.id} className="border p-3 rounded-lg text-center cursor-pointer hover:shadow-lg hover:border-primary transition-all flex flex-col items-center justify-between" onClick={() => addToCart(product)}>
+                    {product.imageUrls && product.imageUrls.length > 0 ? (
+                        <img src={product.imageUrls[0]} alt={product.name} className="w-20 h-20 object-cover rounded-md mb-2"/>
+                    ) : (
+                        <div className="w-20 h-20 bg-gray-100 rounded-md flex items-center justify-center mb-2">
+                            <ImageIcon className="text-gray-400" />
+                        </div>
+                    )}
+                    <h3 className="font-semibold truncate text-sm w-full">{product.name}</h3>
+                    <p className="text-gray-600 font-bold mt-1">{formatCurrency(product.price)}</p>
                 </div>
             ))}
             </div>
@@ -183,20 +257,20 @@ const PDV: React.FC = () => {
             <span>{formatCurrency(total)}</span>
           </div>
           <div className="mb-4">
-              <h3 className="font-semibold text-center mb-2">Forma de Pagamento</h3>
-              <div className="flex justify-center gap-4">
+              <h3 className="font-semibold text-center mb-2">Forma de Pagamento (F3-F6)</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {paymentMethods.map(({ name, icon }) => (
                      <button 
                         key={name}
                         onClick={() => handlePaymentMethodSelect(name)}
-                        className={`flex flex-col items-center p-2 border rounded-lg w-24 transition-colors ${
+                        className={`flex flex-col items-center p-2 border rounded-lg transition-colors text-sm ${
                             selectedPaymentMethod === name 
                             ? 'bg-primary text-white border-primary' 
                             : 'hover:bg-gray-100'
                         }`}
                      >
                         {icon}
-                        <span>{name}</span>
+                        <span className="mt-1">{name}</span>
                     </button>
                 ))}
               </div>
@@ -218,13 +292,32 @@ const PDV: React.FC = () => {
                     </select>
                 </div>
               )}
+               {selectedPaymentMethod === 'Dinheiro' && (
+                <div className="mt-4">
+                    <label htmlFor="amountReceived" className="block text-sm font-medium text-gray-700">Valor Recebido</label>
+                    <input
+                        type="number"
+                        id="amountReceived"
+                        step="0.01"
+                        value={amountReceived}
+                        onChange={handleAmountReceivedChange}
+                        className="w-full p-2 border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary text-lg"
+                        placeholder={formatCurrency(total)}
+                    />
+                    {change > 0 && (
+                        <div className="mt-2 text-center text-lg font-bold text-green-600">
+                            Troco: {formatCurrency(change)}
+                        </div>
+                    )}
+                </div>
+              )}
           </div>
           <button 
             onClick={finalizeSale}
-            className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:bg-gray-400"
-            disabled={cart.length === 0 || !selectedPaymentMethod || (selectedPaymentMethod === 'Crédito' && !installments)}
+            className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:bg-gray-400 flex items-center justify-center"
+            disabled={cart.length === 0 || !selectedPaymentMethod || (selectedPaymentMethod === 'Crédito' && !installments) || (selectedPaymentMethod === 'Dinheiro' && (amountReceived === '' || Number(amountReceived) < total))}
             >
-            Finalizar Venda e Emitir Cupom
+            Finalizar Venda (F2)
           </button>
         </div>
       </div>
@@ -239,7 +332,7 @@ const PDV: React.FC = () => {
              <div className="flex justify-between items-center p-4 border-t bg-white rounded-b-lg no-print">
                <button onClick={handleCloseReceiptModal} className="text-gray-600 hover:text-gray-900 font-semibold flex items-center gap-2">
                     <X size={18} />
-                    Fechar
+                    Fechar (Esc)
                </button>
                <button onClick={handlePrint} className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors">
                    <Printer size={18} className="mr-2" />

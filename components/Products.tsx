@@ -5,7 +5,7 @@ import { flushSync } from 'react-dom';
 import { MOCK_PRODUCTS, MOCK_CATEGORIES, MOCK_BRANDS, MOCK_SUPPLIERS } from '../constants';
 import { type Product, type Category, type Brand, type Supplier } from '../types';
 import { DataTable } from './shared/DataTable';
-import { Plus, Edit, Trash2, UploadCloud, LayoutGrid, Printer } from 'lucide-react';
+import { Plus, Edit, Trash2, UploadCloud, LayoutGrid, Printer, Image as ImageIcon, X } from 'lucide-react';
 import Modal from './shared/Modal';
 
 const formatCurrency = (value: number | null | undefined): string => {
@@ -61,6 +61,18 @@ const Products: React.FC = () => {
   });
 
   const columns = [
+    {
+      header: 'Imagem',
+      accessor: (item: Product) => (
+          item.imageUrls && item.imageUrls.length > 0 ? (
+              <img src={item.imageUrls[0]} alt={item.name} className="w-12 h-12 object-cover rounded-md"/>
+          ) : (
+              <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
+                  <ImageIcon className="text-gray-400" />
+              </div>
+          )
+      )
+    },
     { header: 'SKU', accessor: 'sku' as keyof Product },
     { header: 'Nome', accessor: 'name' as keyof Product },
     { header: 'Categoria', accessor: 'category' as keyof Product },
@@ -80,6 +92,7 @@ const Products: React.FC = () => {
         category: '',
         sku: '',
         unit: 'UN',
+        imageUrls: [],
       });
     }
     setIsModalOpen(true);
@@ -133,6 +146,39 @@ const Products: React.FC = () => {
     setEditingProduct(prev => (prev ? { ...prev, [name]: numericValue } : null));
   };
 
+  const handleImageFileChange = async (files: FileList | null) => {
+    if (!files) return;
+
+    const fileToDataUrl = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const newImageUrls = await Promise.all(Array.from(files).map(fileToDataUrl));
+    
+    setEditingProduct(prev => {
+        if (!prev) return null;
+        const existingUrls = prev.imageUrls || [];
+        return {
+            ...prev,
+            imageUrls: [...existingUrls, ...newImageUrls]
+        };
+    });
+  };
+  
+  const handleRemoveImage = (indexToRemove: number) => {
+    setEditingProduct(prev => {
+        if (!prev || !prev.imageUrls) return prev;
+        return {
+            ...prev,
+            imageUrls: prev.imageUrls.filter((_, index) => index !== indexToRemove)
+        };
+    });
+  };
 
   const handleBulkDelete = () => {
     if (window.confirm(`Tem certeza que deseja excluir ${selection.length} produto(s)?`)) {
@@ -464,6 +510,34 @@ const Products: React.FC = () => {
                         <label htmlFor="stock" className="block text-sm font-medium text-gray-700">Estoque Atual</label>
                         <input type="number" id="stock" name="stock" value={editingProduct.stock || 0} onChange={handleInputChange} className="mt-1 p-2 border rounded w-full"/>
                     </div>
+                </div>
+            </div>
+            
+            <div className="border-t pt-4">
+                <h3 className="font-semibold text-gray-600 mb-2">Imagens do Produto</h3>
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {editingProduct.imageUrls?.map((url, index) => (
+                        <div key={index} className="relative aspect-square border rounded-md overflow-hidden group">
+                            <img src={url} alt={`Preview ${index}`} className="w-full h-full object-cover"/>
+                            <button 
+                                type="button" 
+                                onClick={() => handleRemoveImage(index)}
+                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            >
+                                <X size={14} />
+                            </button>
+                        </div>
+                    ))}
+                    <label 
+                        htmlFor="product-image-upload" 
+                        onDrop={(e) => { e.preventDefault(); handleImageFileChange(e.dataTransfer.files); }}
+                        onDragOver={(e) => e.preventDefault()}
+                        className="aspect-square border-2 border-dashed rounded-md flex flex-col items-center justify-center text-gray-400 hover:text-primary hover:border-primary cursor-pointer transition-colors"
+                    >
+                        <UploadCloud size={32}/>
+                        <span className="text-xs mt-1 text-center">Adicionar Imagem</span>
+                    </label>
+                    <input id="product-image-upload" type="file" multiple accept="image/*" className="hidden" onChange={(e) => handleImageFileChange(e.target.files)}/>
                 </div>
             </div>
 

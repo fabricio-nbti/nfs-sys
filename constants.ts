@@ -215,6 +215,7 @@ export const MOCK_USERS: User[] = [
       settings: true,
       userManagement: true,
       couponManagement: true,
+      reports: true,
     }
   },
   {
@@ -243,6 +244,7 @@ export const MOCK_USERS: User[] = [
       settings: false,
       userManagement: false,
       couponManagement: false,
+      reports: false,
     }
   },
    {
@@ -271,6 +273,7 @@ export const MOCK_USERS: User[] = [
       settings: false,
       userManagement: false,
       couponManagement: false,
+      reports: true,
     }
   },
   {
@@ -299,6 +302,7 @@ export const MOCK_USERS: User[] = [
       settings: false,
       userManagement: false,
       couponManagement: false,
+      reports: true,
     }
   }
 ];

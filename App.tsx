@@ -19,6 +19,7 @@ import InvoiceIssuing from './components/InvoiceIssuing';
 import ShopeeCalc from './components/ShopeeCalc';
 import UserManagement from './components/UserManagement';
 import CouponManagement from './components/CouponManagement';
+import Reports from './components/Reports';
 import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -132,6 +133,8 @@ const App: React.FC = () => {
         return <AccountsReceivable />;
       case 'shopee-calc':
         return <ShopeeCalc />;
+      case 'reports':
+        return <Reports />;
       case 'user-management':
         return <UserManagement />;
       case 'coupon-management':

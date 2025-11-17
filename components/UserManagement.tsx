@@ -25,8 +25,9 @@ const permissionLabels: Record<keyof UserPermissions, string> = {
   shopeeCalc: 'Calculadora Shopee',
   settings: 'Configurações',
   userManagement: 'Gerenciar Usuários',
-  // FIX: Added missing couponManagement property.
   couponManagement: 'Gerenciar Cupons',
+  // FIX: Added missing 'reports' property to match the UserPermissions type.
+  reports: 'Relatórios',
 };
 
 const UserManagement: React.FC = () => {

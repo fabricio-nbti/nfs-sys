@@ -1,4 +1,4 @@
-export type Page = 'dashboard' | 'pdv' | 'products' | 'customers' | 'invoices' | 'invoice-issuing' | 'companies' | 'accounts-payable' | 'accounts-receivable' | 'service-orders' | 'electronics-service-orders' | 'automotive-service-orders' | 'security-service-orders' | 'solar-energy-service-orders' | 'it-consulting-service-orders' | 'settings' | 'shopee-calc' | 'user-management' | 'coupon-management';
+export type Page = 'dashboard' | 'pdv' | 'products' | 'customers' | 'invoices' | 'invoice-issuing' | 'companies' | 'accounts-payable' | 'accounts-receivable' | 'service-orders' | 'electronics-service-orders' | 'automotive-service-orders' | 'security-service-orders' | 'solar-energy-service-orders' | 'it-consulting-service-orders' | 'settings' | 'shopee-calc' | 'user-management' | 'coupon-management' | 'reports';
 
 export interface Category {
   id: string;
@@ -186,6 +186,7 @@ export interface UserPermissions {
   settings: boolean;
   userManagement: boolean;
   couponManagement: boolean;
+  reports: boolean;
 }
 
 export interface User {

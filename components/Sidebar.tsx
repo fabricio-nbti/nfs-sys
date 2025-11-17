@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { type Page, type AppSettings, type UserPermissions } from '../types';
-import { BarChart3, ShoppingCart, Receipt, Box, Users, Building, ArrowDownCircle, ArrowUpCircle, Menu, X, Wrench, Tv, Cog, Car, FileText, ShieldCheck, Sun, Network, Calculator, UserCog, LogOut, Tag } from 'lucide-react';
+import { BarChart3, ShoppingCart, Receipt, Box, Users, Building, ArrowDownCircle, ArrowUpCircle, Menu, X, Wrench, Tv, Cog, Car, FileText, ShieldCheck, Sun, Network, Calculator, UserCog, LogOut, Tag, AreaChart } from 'lucide-react';
 
 interface SidebarProps {
   currentPage: Page;
@@ -24,23 +24,29 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
+  const handlePageSelect = (page: Page) => {
+    setCurrentPage(page);
+    setIsMobileOpen(false); // Closes mobile menu on navigation
+  };
+
   const navItems = [
-    { icon: <BarChart3 size={20} />, label: 'Dashboard', page: 'dashboard' as Page, condition: true },
-    { icon: <ShoppingCart size={20} />, label: 'PDV', page: 'pdv' as Page, condition: true },
-    { icon: <FileText size={20} />, label: 'Emissão de Notas', page: 'invoice-issuing' as Page, condition: settings.showInvoiceIssuing },
-    { icon: <Receipt size={20} />, label: 'Histórico de Notas', page: 'invoices' as Page, condition: true },
-    { icon: <Wrench size={20} />, label: 'O.S. - Celulares', page: 'service-orders' as Page, condition: settings.showMobileRepair },
-    { icon: <Tv size={20} />, label: 'O.S. - Eletrônicos', page: 'electronics-service-orders' as Page, condition: settings.showElectronicsRepair },
-    { icon: <Car size={20} />, label: 'O.S. - Automotivo', page: 'automotive-service-orders' as Page, condition: settings.showAutomotiveRepair },
-    { icon: <ShieldCheck size={20} />, label: 'O.S. - Segurança', page: 'security-service-orders' as Page, condition: settings.showSecuritySystems },
-    { icon: <Sun size={20} />, label: 'O.S. - Energia Solar', page: 'solar-energy-service-orders' as Page, condition: settings.showSolarEnergy },
-    { icon: <Network size={20} />, label: 'O.S. - Consultoria TI', page: 'it-consulting-service-orders' as Page, condition: settings.showITConsulting },
-    { icon: <Box size={20} />, label: 'Produtos', page: 'products' as Page, condition: true },
-    { icon: <Users size={20} />, label: 'Clientes', page: 'customers' as Page, condition: true },
-    { icon: <Building size={20} />, label: 'Empresas', page: 'companies' as Page, condition: true },
-    { icon: <ArrowDownCircle size={20} />, label: 'Contas a Pagar', page: 'accounts-payable' as Page, condition: true },
-    { icon: <ArrowUpCircle size={20} />, label: 'Contas a Receber', page: 'accounts-receivable' as Page, condition: true },
-    { icon: <Calculator size={20} />, label: 'Calculadora Shopee', page: 'shopee-calc' as Page, condition: true },
+    { icon: <BarChart3 size={20} />, label: 'Dashboard', page: 'dashboard' as Page, condition: permissions.dashboard },
+    { icon: <ShoppingCart size={20} />, label: 'PDV', page: 'pdv' as Page, condition: permissions.pdv },
+    { icon: <FileText size={20} />, label: 'Emissão de Notas', page: 'invoice-issuing' as Page, condition: settings.showInvoiceIssuing && permissions.invoiceIssuing },
+    { icon: <Receipt size={20} />, label: 'Histórico de Notas', page: 'invoices' as Page, condition: permissions.invoices },
+    { icon: <Wrench size={20} />, label: 'O.S. - Celulares', page: 'service-orders' as Page, condition: settings.showMobileRepair && permissions.serviceOrders },
+    { icon: <Tv size={20} />, label: 'O.S. - Eletrônicos', page: 'electronics-service-orders' as Page, condition: settings.showElectronicsRepair && permissions.electronicsServiceOrders },
+    { icon: <Car size={20} />, label: 'O.S. - Automotivo', page: 'automotive-service-orders' as Page, condition: settings.showAutomotiveRepair && permissions.automotiveServiceOrders },
+    { icon: <ShieldCheck size={20} />, label: 'O.S. - Segurança', page: 'security-service-orders' as Page, condition: settings.showSecuritySystems && permissions.securityServiceOrders },
+    { icon: <Sun size={20} />, label: 'O.S. - Energia Solar', page: 'solar-energy-service-orders' as Page, condition: settings.showSolarEnergy && permissions.solarEnergyServiceOrders },
+    { icon: <Network size={20} />, label: 'O.S. - Consultoria TI', page: 'it-consulting-service-orders' as Page, condition: settings.showITConsulting && permissions.itConsultingServiceOrders },
+    { icon: <Box size={20} />, label: 'Produtos', page: 'products' as Page, condition: permissions.products },
+    { icon: <Users size={20} />, label: 'Clientes', page: 'customers' as Page, condition: permissions.customers },
+    { icon: <Building size={20} />, label: 'Empresas', page: 'companies' as Page, condition: permissions.companies },
+    { icon: <ArrowDownCircle size={20} />, label: 'Contas a Pagar', page: 'accounts-payable' as Page, condition: permissions.accountsPayable },
+    { icon: <ArrowUpCircle size={20} />, label: 'Contas a Receber', page: 'accounts-receivable' as Page, condition: permissions.accountsReceivable },
+    { icon: <AreaChart size={20} />, label: 'Relatórios', page: 'reports' as Page, condition: permissions.reports },
+    { icon: <Calculator size={20} />, label: 'Calculadora Shopee', page: 'shopee-calc' as Page, condition: permissions.shopeeCalc },
   ];
 
   const adminItems = [
@@ -60,14 +66,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings
       <nav className="flex-1 px-2 py-4 flex flex-col overflow-y-auto">
         <ul>
           {navItems.filter(item => item.condition).map(item => (
-            <NavItem key={item.page} {...item} currentPage={currentPage} setCurrentPage={setCurrentPage} isCollapsed={isCollapsed} />
+            <NavItem key={item.page} {...item} currentPage={currentPage} setCurrentPage={handlePageSelect} isCollapsed={isCollapsed} />
           ))}
         </ul>
         <div className="mt-auto">
             <hr className="border-t border-gray-700 my-2 mx-2"/>
             <ul>
              {adminItems.filter(item => item.condition).map(item => (
-                <NavItem key={item.page} {...item} currentPage={currentPage} setCurrentPage={setCurrentPage} isCollapsed={isCollapsed} />
+                <NavItem key={item.page} {...item} currentPage={currentPage} setCurrentPage={handlePageSelect} isCollapsed={isCollapsed} />
             ))}
             </ul>
             <hr className="border-t border-gray-700 my-2 mx-2"/>
@@ -86,14 +92,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings
   return (
     <>
       {/* Mobile Menu Button */}
-      <button onClick={() => setIsMobileOpen(true)} className="lg:hidden fixed top-4 left-4 z-50 bg-primary text-white p-2 rounded-md">
+      <button onClick={() => setIsMobileOpen(true)} className={`lg:hidden fixed top-4 left-4 z-50 bg-primary text-white p-2 rounded-md transition-opacity duration-300 ${isMobileOpen ? 'opacity-0 invisible' : 'opacity-100'}`}>
         <Menu size={24} />
       </button>
 
       {/* Mobile Sidebar */}
       <div className={`fixed inset-0 z-40 transform ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:hidden`}>
-        <div className="relative w-64 h-full">
-           <button onClick={() => setIsMobileOpen(false)} className="absolute top-4 right-4 text-gray-300 hover:text-white z-10">
+        <div className="relative w-64 h-full z-10">
+           <button onClick={() => setIsMobileOpen(false)} className="absolute top-4 right-4 text-gray-300 hover:text-white z-20">
             <X size={24} />
           </button>
           {React.cloneElement(sidebarContent, { isCollapsed: false })}

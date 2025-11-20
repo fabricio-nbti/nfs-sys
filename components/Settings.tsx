@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { type AppSettings, type Company } from '../types';
 import ToggleSwitch from './shared/ToggleSwitch';
@@ -109,6 +110,24 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings, mainCompany,
             label="Página de Emissão de Notas"
             enabled={settings.showInvoiceIssuing}
             onChange={() => handleToggle('showInvoiceIssuing')}
+            labelClassName="text-base"
+          />
+           <ToggleSwitch
+            label="Ponto de Coleta - Vendas e Insumos"
+            enabled={settings.showCollectionPoint}
+            onChange={() => handleToggle('showCollectionPoint')}
+            labelClassName="text-base"
+          />
+          <ToggleSwitch
+            label="Calculadora Shopee"
+            enabled={settings.showShopeeCalc}
+            onChange={() => handleToggle('showShopeeCalc')}
+            labelClassName="text-base"
+          />
+          <ToggleSwitch
+            label="Controle de Etiquetas de Devolução"
+            enabled={settings.showReturnLabels}
+            onChange={() => handleToggle('showReturnLabels')}
             labelClassName="text-base"
           />
           <ToggleSwitch

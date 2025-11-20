@@ -1,4 +1,5 @@
-import { type Product, type Customer, type Company, type Invoice, type AccountTransaction, InvoiceStatus, type ServiceOrder, ServiceOrderStatus, type User, type Category, type Brand, type Supplier, type Coupon } from './types';
+
+import { type Product, type Customer, type Company, type Invoice, type AccountTransaction, InvoiceStatus, type ServiceOrder, ServiceOrderStatus, type User, type Category, type Brand, type Supplier, type Coupon, type ReturnEntry, type LabelStockEntry } from './types';
 
 export const MOCK_CATEGORIES: Category[] = [
   { id: 'cat-1', name: 'Eletrônicos' },
@@ -196,6 +197,8 @@ export const MOCK_USERS: User[] = [
       accountsPayable: true,
       accountsReceivable: true,
       shopeeCalc: true,
+      returnLabels: true,
+      collectionPoint: true,
       settings: true,
       userManagement: true,
       couponManagement: true,
@@ -226,6 +229,8 @@ export const MOCK_USERS: User[] = [
       accountsPayable: false,
       accountsReceivable: false,
       shopeeCalc: true,
+      returnLabels: true,
+      collectionPoint: true,
       settings: false,
       userManagement: false,
       couponManagement: false,
@@ -264,4 +269,21 @@ export const MOCK_COUPONS: Coupon[] = [
     usedCount: 5,
     usageHistory: []
   }
+];
+
+// Mock Data for Return Labels
+const today = new Date();
+const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+const twoDaysAgo = new Date(today); twoDaysAgo.setDate(today.getDate() - 2);
+const lastMonth = new Date(today); lastMonth.setMonth(today.getMonth() - 1);
+
+export const MOCK_RETURN_ENTRIES: ReturnEntry[] = [
+  { id: 'ret-1', date: today.toISOString().split('T')[0], quantity: 12 },
+  { id: 'ret-2', date: yesterday.toISOString().split('T')[0], quantity: 8 },
+  { id: 'ret-3', date: twoDaysAgo.toISOString().split('T')[0], quantity: 15 },
+];
+
+export const MOCK_LABEL_STOCK_ENTRIES: LabelStockEntry[] = [
+    { id: 'stock-1', date: lastMonth.toISOString().split('T')[0], quantity: 1000, totalCost: 35.00, unitCost: 0.035, description: 'Compra Inicial' },
+    { id: 'stock-2', date: twoDaysAgo.toISOString().split('T')[0], quantity: 2000, totalCost: 65.00, unitCost: 0.0325, description: 'Reposição' },
 ];

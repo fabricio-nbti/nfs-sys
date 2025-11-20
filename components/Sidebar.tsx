@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { type Page, type AppSettings, type UserPermissions } from '../types';
-import { BarChart3, ShoppingCart, Receipt, Box, Users, Building, ArrowDownCircle, ArrowUpCircle, Menu, X, Wrench, Tv, Cog, Car, FileText, ShieldCheck, Sun, Network, Calculator, UserCog, LogOut, Tag, AreaChart, Shield } from 'lucide-react';
+import { BarChart3, ShoppingCart, Receipt, Box, Users, Building, ArrowDownCircle, ArrowUpCircle, Menu, X, Wrench, Tv, Cog, Car, FileText, ShieldCheck, Sun, Network, Calculator, UserCog, LogOut, Tag, AreaChart, Shield, Tags, PackageCheck } from 'lucide-react';
 
 interface SidebarProps {
   currentPage: Page;
@@ -48,7 +49,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, settings
     { icon: <ArrowDownCircle size={20} />, label: 'Contas a Pagar', page: 'accounts-payable' as Page, condition: permissions.accountsPayable },
     { icon: <ArrowUpCircle size={20} />, label: 'Contas a Receber', page: 'accounts-receivable' as Page, condition: permissions.accountsReceivable },
     { icon: <AreaChart size={20} />, label: 'Relatórios', page: 'reports' as Page, condition: permissions.reports },
-    { icon: <Calculator size={20} />, label: 'Calculadora Shopee', page: 'shopee-calc' as Page, condition: permissions.shopeeCalc },
+    { icon: <Calculator size={20} />, label: 'Calculadora Shopee', page: 'shopee-calc' as Page, condition: settings.showShopeeCalc && permissions.shopeeCalc },
+    { icon: <Tags size={20} />, label: 'Controle de Etiquetas', page: 'return-labels' as Page, condition: settings.showReturnLabels && permissions.returnLabels },
+    { icon: <PackageCheck size={20} />, label: 'Ponto de Coleta', page: 'collection-point' as Page, condition: settings.showCollectionPoint && permissions.collectionPoint },
   ];
 
   const adminItems = [

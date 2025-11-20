@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { MOCK_USERS, MOCK_COMPANIES } from '../constants';
 import { type User, type UserPermissions, type Company } from '../types';
@@ -24,6 +25,8 @@ const permissionLabels: Record<keyof UserPermissions, string> = {
   accountsPayable: 'Contas a Pagar',
   accountsReceivable: 'Contas a Receber',
   shopeeCalc: 'Calculadora Shopee',
+  returnLabels: 'Controle de Etiquetas',
+  collectionPoint: 'Ponto de Coleta',
   settings: 'Configurações',
   userManagement: 'Gerenciar Usuários',
   couponManagement: 'Gerenciar Cupons',

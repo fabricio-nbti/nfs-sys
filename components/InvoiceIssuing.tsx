@@ -1,7 +1,8 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { MOCK_SERVICE_ORDERS, MOCK_ELECTRONICS_SERVICE_ORDERS, MOCK_AUTOMOTIVE_SERVICE_ORDERS, MOCK_SECURITY_SERVICE_ORDERS, MOCK_SOLAR_ENERGY_SERVICE_ORDERS, MOCK_IT_CONSULTING_SERVICE_ORDERS, MOCK_CUSTOMERS } from '../constants';
 import { ServiceOrderStatus, type ServiceOrder, type InvoiceItem, type AppSettings, type Company } from '../types';
-import { PlusCircle, Trash2, FileText, ShieldAlert } from 'lucide-react';
+import { PlusCircle, Trash2, FileText, ShieldAlert, Package, Receipt, CheckCircle2, Building2, Search, User, FileBadge, ArrowRight, AlertTriangle } from 'lucide-react';
 
 type InvoiceType = 'NFe' | 'NFSe' | 'NFCe';
 
@@ -69,8 +70,8 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings, companies }) 
             // Pre-fill NFSe specific fields from OS
             const observations = `Serviço referente à O.S. ${order.id}. Problema relatado: ${order.reportedProblem}. Laudo técnico: ${order.technicianNotes || 'N/A'}.`;
             setServiceObservations(observations);
-            setTakerMunicipalRegistration(''); // This info is not in our mock customer data
-            setServiceCode('14.01'); // Common code for repair services
+            setTakerMunicipalRegistration(''); 
+            setServiceCode('14.01');
 
             const newItems: InvoiceItem[] = [];
             if (order.serviceCost) {
@@ -173,166 +174,292 @@ const InvoiceIssuing: React.FC<InvoiceIssuingProps> = ({ settings, companies }) 
         message += `\n\nEm um ambiente real, a requisição para a API (nfe-sped) seria feita aqui.`;
 
         alert(message);
-        setSelectedOS('');
+        // Reset or redirect logic could go here
     };
-
-    const renderTypeButton = (type: InvoiceType, label: string) => (
-        <button
-            onClick={() => setInvoiceType(type)}
-            className={`px-4 py-2 rounded-md font-semibold transition-colors text-sm sm:text-base ${
-                invoiceType === type ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-        >
-            {label}
-        </button>
-    );
 
     const currentIssuer = companies.find(c => c.id === selectedIssuer);
 
     return (
-        <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Emissão de Notas</h1>
+        <div className="max-w-6xl mx-auto">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Emissão de Notas Fiscais</h1>
+            <p className="text-gray-500 mb-8">Configure e emita seus documentos fiscais de forma simples e rápida.</p>
             
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <h2 className="text-lg font-semibold mb-2 text-gray-600">1. Empresa Emissora</h2>
-                        <select
-                            value={selectedIssuer}
-                            onChange={(e) => setSelectedIssuer(e.target.value)}
-                            className="w-full p-2 border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
-                        >
-                            {companies.map(c => (
-                                <option key={c.id} value={c.id}>
-                                    {c.name} ({c.document})
-                                </option>
-                            ))}
-                        </select>
-                         {!currentIssuer?.hasCertificate && (
-                            <div className="mt-2 flex items-center gap-2 text-sm text-yellow-700 bg-yellow-100 p-2 rounded-md">
-                                <ShieldAlert size={20} />
-                                <span>Atenção: Esta empresa não possui um certificado digital válido para emissão.</span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                {/* LEFT COLUMN: Configuration */}
+                <div className="space-y-6">
+                    {/* Step 1: Issuer */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="flex items-center mb-4">
+                            <div className="bg-indigo-100 p-2 rounded-lg mr-3 text-primary font-bold">1</div>
+                            <h2 className="text-lg font-semibold text-gray-800">Quem está emitindo?</h2>
+                        </div>
+                        
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Empresa Emissora</label>
+                        <div className="relative">
+                            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <select
+                                value={selectedIssuer}
+                                onChange={(e) => setSelectedIssuer(e.target.value)}
+                                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
+                            >
+                                {companies.map(c => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {currentIssuer && (
+                            <div className={`mt-4 p-4 rounded-lg border ${currentIssuer.hasCertificate ? 'bg-green-50 border-green-100' : 'bg-yellow-50 border-yellow-100'}`}>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="font-bold text-sm text-gray-800">{currentIssuer.legalName}</p>
+                                        <p className="text-xs text-gray-500 mt-1">CNPJ: {currentIssuer.document}</p>
+                                    </div>
+                                    {currentIssuer.hasCertificate ? (
+                                        <CheckCircle2 size={18} className="text-green-600" />
+                                    ) : (
+                                        <AlertTriangle size={18} className="text-yellow-600" />
+                                    )}
+                                </div>
+                                {!currentIssuer.hasCertificate && (
+                                    <p className="text-xs text-yellow-700 mt-2 flex items-center">
+                                        <ShieldAlert size={12} className="mr-1"/> Certificado digital pendente.
+                                    </p>
+                                )}
                             </div>
                         )}
                     </div>
-                     <div>
-                        <h2 className="text-lg font-semibold mb-2 text-gray-600">2. Escolha o Tipo de Documento</h2>
-                        <div className="flex flex-wrap gap-2">
-                            {renderTypeButton('NFSe', 'NFSe (Serviço)')}
-                            {renderTypeButton('NFe', 'NFe (Produto)')}
-                            {renderTypeButton('NFCe', 'NFCe (Cupom)')}
+
+                    {/* Step 2: Type */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="flex items-center mb-4">
+                            <div className="bg-indigo-100 p-2 rounded-lg mr-3 text-primary font-bold">2</div>
+                            <h2 className="text-lg font-semibold text-gray-800">Tipo de Documento</h2>
                         </div>
+
+                        <div className="space-y-3">
+                            <button
+                                onClick={() => setInvoiceType('NFSe')}
+                                className={`w-full flex items-center p-3 rounded-lg border transition-all text-left ${
+                                    invoiceType === 'NFSe' ? 'border-primary bg-indigo-50 ring-1 ring-primary' : 'border-gray-200 hover:bg-gray-50'
+                                }`}
+                            >
+                                <div className={`p-2 rounded-full mr-3 ${invoiceType === 'NFSe' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                    <FileText size={20} />
+                                </div>
+                                <div>
+                                    <p className={`font-bold text-sm ${invoiceType === 'NFSe' ? 'text-primary' : 'text-gray-700'}`}>NFSe (Serviço)</p>
+                                    <p className="text-xs text-gray-500">Para prestação de serviços</p>
+                                </div>
+                            </button>
+
+                            <button
+                                onClick={() => setInvoiceType('NFe')}
+                                className={`w-full flex items-center p-3 rounded-lg border transition-all text-left ${
+                                    invoiceType === 'NFe' ? 'border-primary bg-indigo-50 ring-1 ring-primary' : 'border-gray-200 hover:bg-gray-50'
+                                }`}
+                            >
+                                <div className={`p-2 rounded-full mr-3 ${invoiceType === 'NFe' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                    <Package size={20} />
+                                </div>
+                                <div>
+                                    <p className={`font-bold text-sm ${invoiceType === 'NFe' ? 'text-primary' : 'text-gray-700'}`}>NFe (Produto)</p>
+                                    <p className="text-xs text-gray-500">Venda de mercadorias (Danfe)</p>
+                                </div>
+                            </button>
+
+                            <button
+                                onClick={() => setInvoiceType('NFCe')}
+                                className={`w-full flex items-center p-3 rounded-lg border transition-all text-left ${
+                                    invoiceType === 'NFCe' ? 'border-primary bg-indigo-50 ring-1 ring-primary' : 'border-gray-200 hover:bg-gray-50'
+                                }`}
+                            >
+                                <div className={`p-2 rounded-full mr-3 ${invoiceType === 'NFCe' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                    <Receipt size={20} />
+                                </div>
+                                <div>
+                                    <p className={`font-bold text-sm ${invoiceType === 'NFCe' ? 'text-primary' : 'text-gray-700'}`}>NFCe (Cupom)</p>
+                                    <p className="text-xs text-gray-500">Venda direta ao consumidor</p>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Step 3: Reference */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                         <div className="flex items-center mb-4">
+                            <div className="bg-indigo-100 p-2 rounded-lg mr-3 text-primary font-bold">3</div>
+                            <h2 className="text-lg font-semibold text-gray-800">Referência (Opcional)</h2>
+                        </div>
+                        
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Importar de Ordem de Serviço</label>
+                         <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <select
+                                value={selectedOS}
+                                onChange={(e) => setSelectedOS(e.target.value)}
+                                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
+                            >
+                                <option value="">-- Selecionar O.S. Concluída --</option>
+                                {completedServiceOrders.map(os => (
+                                    <option key={os.id} value={os.id}>
+                                        {os.id} - {os.customerName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {selectedOS && (
+                            <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100 text-sm">
+                                <p className="text-blue-800 font-medium flex items-center gap-2"><CheckCircle2 size={14}/> Dados importados!</p>
+                                <p className="text-blue-600 mt-1 text-xs">Os itens e valores foram preenchidos automaticamente com base na O.S. selecionada.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="mb-6">
-                     <h2 className="text-lg font-semibold mb-2 text-gray-600">3. Puxar Dados de O.S. (Opcional)</h2>
-                    <select
-                        value={selectedOS}
-                        onChange={(e) => setSelectedOS(e.target.value)}
-                        className="w-full p-2 border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                        <option value="">-- Emissão Avulsa --</option>
-                        {completedServiceOrders.map(os => (
-                            <option key={os.id} value={os.id}>
-                                O.S. {os.id} - {os.customerName} ({formatCurrency(os.totalValue)})
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                
-                <div className="border-t pt-6">
-                    <h2 className="text-lg font-semibold mb-4 text-gray-600">4. Preencha os Dados da Nota</h2>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700">Cliente / Tomador do Serviço</label>
-                            <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Nome do cliente" className="mt-1 p-2 w-full border rounded-md"/>
+                {/* RIGHT COLUMN: Form Details */}
+                <div className="lg:col-span-2 space-y-6">
+                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="flex items-center mb-6">
+                            <div className="bg-indigo-100 p-2 rounded-lg mr-3 text-primary font-bold">4</div>
+                            <h2 className="text-lg font-semibold text-gray-800">Detalhes da Nota</h2>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">CPF/CNPJ do Tomador</label>
-                            <input type="text" value={customerDoc} onChange={e => setCustomerDoc(e.target.value)} placeholder="Documento" className="mt-1 p-2 w-full border rounded-md"/>
-                        </div>
-                    </div>
 
-                    {invoiceType === 'NFSe' && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        {/* Client Info */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Inscrição Municipal Tomador</label>
-                                <input type="text" value={takerMunicipalRegistration} onChange={e => setTakerMunicipalRegistration(e.target.value)} placeholder="Opcional" className="mt-1 p-2 w-full border rounded-md"/>
+                                <label className="block text-sm font-medium text-gray-600 mb-1">Cliente / Tomador</label>
+                                <div className="relative">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                    <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Nome do cliente" />
+                                </div>
                             </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700">Código do Serviço (LC 116)</label>
-                                <input type="text" value={serviceCode} onChange={e => setServiceCode(e.target.value)} placeholder="Ex: 14.01" className="mt-1 p-2 w-full border rounded-md"/>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-1">CPF / CNPJ</label>
+                                <div className="relative">
+                                    <FileBadge className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                    <input type="text" value={customerDoc} onChange={e => setCustomerDoc(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Documento" />
+                                </div>
                             </div>
                         </div>
-                    )}
 
-                    <h3 className="text-md font-semibold mb-2 text-gray-600">Itens da Nota</h3>
-                    <div className="space-y-2 mb-4">
-                        {items.map(item => (
-                            <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
-                                <input 
-                                    type="text" 
-                                    placeholder="Descrição do item/serviço" 
-                                    className="col-span-6 p-2 border rounded-md text-sm"
-                                    value={item.description}
-                                    onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
-                                />
-                                <input 
-                                    type="number" 
-                                    placeholder="Qtd." 
-                                    className="col-span-2 p-2 border rounded-md text-sm"
-                                    value={item.quantity}
-                                    onChange={(e) => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)}
-                                />
-                                <input 
-                                    type="text" 
-                                    placeholder="Valor Unit." 
-                                    className="col-span-3 p-2 border rounded-md text-sm"
-                                    value={formatCurrency(item.unitPrice) || ''}
-                                    onChange={(e) => handleItemCurrencyChange(item.id, e.target.value)}
-                                />
-                                <button onClick={() => removeItem(item.id)} className="col-span-1 text-red-500 hover:text-red-700 justify-self-center">
-                                    <Trash2 size={18} />
+                        {/* NFSe Specifics */}
+                        {invoiceType === 'NFSe' && (
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
+                                <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                    <FileText size={16} /> Dados do Serviço (ISS)
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Cód. Serviço (LC 116)</label>
+                                        <input type="text" value={serviceCode} onChange={e => setServiceCode(e.target.value)} className="w-full p-2 border rounded-md" placeholder="Ex: 14.01" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Inscrição Municipal Tomador</label>
+                                        <input type="text" value={takerMunicipalRegistration} onChange={e => setTakerMunicipalRegistration(e.target.value)} className="w-full p-2 border rounded-md" placeholder="Opcional" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Observações / Discriminação</label>
+                                    <textarea value={serviceObservations} onChange={e => setServiceObservations(e.target.value)} rows={3} className="w-full p-2 border rounded-md text-sm" placeholder="Detalhes do serviço..." />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Items Table */}
+                        <div className="mb-4">
+                            <div className="flex justify-between items-center mb-2">
+                                <h3 className="font-semibold text-gray-700">Itens da Nota</h3>
+                                <button onClick={addItem} className="text-sm text-primary font-bold hover:underline flex items-center">
+                                    <PlusCircle size={16} className="mr-1"/> Adicionar Item
                                 </button>
                             </div>
-                        ))}
-                    </div>
-
-                    <button onClick={addItem} className="flex items-center gap-2 text-sm text-primary font-semibold hover:text-indigo-800">
-                        <PlusCircle size={18} /> Adicionar Item
-                    </button>
-                    
-                     {invoiceType === 'NFSe' && (
-                        <div className="mt-4">
-                            <h3 className="text-md font-semibold mb-2 text-gray-600">Observações do Serviço</h3>
-                            <textarea 
-                                value={serviceObservations}
-                                onChange={e => setServiceObservations(e.target.value)}
-                                rows={3}
-                                placeholder="Detalhes sobre o serviço prestado, garantia, etc."
-                                className="w-full p-2 border rounded-md text-sm"
-                            />
+                            
+                            <div className="overflow-hidden border border-gray-200 rounded-lg">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-20">Qtd</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-32">Unit.</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase w-32">Total</th>
+                                            <th className="px-4 py-3 w-10"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {items.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={5} className="px-4 py-8 text-center text-gray-400 text-sm">
+                                                    Nenhum item adicionado.
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            items.map(item => (
+                                                <tr key={item.id}>
+                                                    <td className="px-4 py-2">
+                                                        <input 
+                                                            type="text" 
+                                                            className="w-full p-1 border-b border-transparent focus:border-primary focus:outline-none text-sm"
+                                                            value={item.description}
+                                                            onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
+                                                            placeholder="Descrição..."
+                                                        />
+                                                    </td>
+                                                    <td className="px-4 py-2">
+                                                        <input 
+                                                            type="number" 
+                                                            className="w-full p-1 border-b border-transparent focus:border-primary focus:outline-none text-sm"
+                                                            value={item.quantity}
+                                                            onChange={(e) => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                                                        />
+                                                    </td>
+                                                    <td className="px-4 py-2">
+                                                        <input 
+                                                            type="text" 
+                                                            className="w-full p-1 border-b border-transparent focus:border-primary focus:outline-none text-sm"
+                                                            value={formatCurrency(item.unitPrice)}
+                                                            onChange={(e) => handleItemCurrencyChange(item.id, e.target.value)}
+                                                        />
+                                                    </td>
+                                                    <td className="px-4 py-2 text-right font-medium text-sm text-gray-700">
+                                                        {formatCurrency(item.totalPrice)}
+                                                    </td>
+                                                    <td className="px-4 py-2 text-center">
+                                                        <button onClick={() => removeItem(item.id)} className="text-gray-400 hover:text-red-500 transition-colors">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    )}
 
-                    <div className="mt-6 flex justify-end items-center">
-                        <span className="text-lg font-bold text-gray-800">Total: {formatCurrency(subtotal)}</span>
-                    </div>
-
-                    <div className="mt-8 border-t pt-6 flex justify-end">
-                        <button 
-                            onClick={handleIssueInvoice}
-                            disabled={!currentIssuer?.hasCertificate}
-                            className="bg-secondary text-white px-6 py-3 rounded-lg flex items-center hover:bg-emerald-700 transition-colors font-bold disabled:bg-gray-400 disabled:cursor-not-allowed"
-                        >
-                            <FileText size={20} className="mr-2"/>
-                            Emitir {invoiceType}
-                        </button>
-                    </div>
+                        {/* Totals & Action */}
+                        <div className="flex flex-col items-end border-t pt-6">
+                            <div className="text-right mb-6">
+                                <span className="text-gray-500 text-sm uppercase font-bold mr-4">Valor Total</span>
+                                <span className="text-4xl font-extrabold text-gray-800">{formatCurrency(subtotal)}</span>
+                            </div>
+                            
+                            <button 
+                                onClick={handleIssueInvoice}
+                                disabled={!currentIssuer?.hasCertificate}
+                                className="bg-primary text-white px-8 py-4 rounded-xl flex items-center hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Emitir {invoiceType}
+                                <ArrowRight size={20} className="ml-2"/>
+                            </button>
+                            {!currentIssuer?.hasCertificate && (
+                                <p className="text-xs text-red-500 mt-2">Certificado digital obrigatório para emissão.</p>
+                            )}
+                        </div>
+                     </div>
                 </div>
-
             </div>
         </div>
     );

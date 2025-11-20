@@ -1,4 +1,5 @@
-export type Page = 'dashboard' | 'pdv' | 'products' | 'customers' | 'invoices' | 'invoice-issuing' | 'companies' | 'accounts-payable' | 'accounts-receivable' | 'service-orders' | 'electronics-service-orders' | 'automotive-service-orders' | 'security-service-orders' | 'solar-energy-service-orders' | 'it-consulting-service-orders' | 'settings' | 'shopee-calc' | 'user-management' | 'coupon-management' | 'reports' | 'digital-certificate';
+
+export type Page = 'dashboard' | 'pdv' | 'products' | 'customers' | 'invoices' | 'invoice-issuing' | 'companies' | 'accounts-payable' | 'accounts-receivable' | 'service-orders' | 'electronics-service-orders' | 'automotive-service-orders' | 'security-service-orders' | 'solar-energy-service-orders' | 'it-consulting-service-orders' | 'settings' | 'shopee-calc' | 'return-labels' | 'user-management' | 'coupon-management' | 'reports' | 'digital-certificate' | 'collection-point';
 
 export interface Category {
   id: string;
@@ -169,6 +170,9 @@ export interface AppSettings {
   showSecuritySystems: boolean;
   showSolarEnergy: boolean;
   showITConsulting: boolean;
+  showReturnLabels: boolean;
+  showCollectionPoint: boolean;
+  showShopeeCalc: boolean;
 }
 
 export interface UserPermissions {
@@ -189,6 +193,8 @@ export interface UserPermissions {
   accountsPayable: boolean;
   accountsReceivable: boolean;
   shopeeCalc: boolean;
+  returnLabels: boolean;
+  collectionPoint: boolean;
   settings: boolean;
   userManagement: boolean;
   couponManagement: boolean;
@@ -237,4 +243,40 @@ export interface Coupon {
     document: string;
     usedAt: string;
   }[];
+}
+
+export interface LabelStockEntry {
+  id: string;
+  date: string;
+  quantity: number;
+  totalCost: number;
+  unitCost: number; // derived for display
+  description?: string; // e.g., Supplier name or Batch ID
+}
+
+export interface ReturnEntry {
+  id: string;
+  date: string;
+  quantity: number;
+}
+
+export interface CollectionPointItem {
+  id: string;
+  name: string;
+  type: 'packaging' | 'tape' | 'label' | 'other';
+  size?: string;
+  price: number; // Sale price
+  cost: number; // Internal cost
+  stock: number;
+}
+
+export interface CollectionTransaction {
+  id: string;
+  date: string;
+  itemId: string;
+  itemName: string;
+  type: 'sale' | 'internal_use';
+  quantity: number;
+  unitValue: number; // Price for sale, Cost for usage
+  totalValue: number;
 }

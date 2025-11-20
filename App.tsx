@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -18,6 +19,7 @@ import ITConsultingServiceOrders from './components/ITConsultingServiceOrders';
 import Settings from './components/Settings';
 import InvoiceIssuing from './components/InvoiceIssuing';
 import ShopeeCalc from './components/ShopeeCalc';
+import ReturnLabels from './components/ReturnLabels';
 import UserManagement from './components/UserManagement';
 import CouponManagement from './components/CouponManagement';
 import Reports from './components/Reports';
@@ -26,6 +28,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import FullRegister from './components/FullRegister';
 import DigitalCertificate from './components/DigitalCertificate';
+import CollectionPoint from './components/CollectionPoint';
 import { type Page, type AppSettings, type User, type Company } from './types';
 import { MOCK_USERS, MOCK_COMPANIES } from './constants';
 
@@ -49,6 +52,9 @@ const App: React.FC = () => {
     showSecuritySystems: true,
     showSolarEnergy: true,
     showITConsulting: true,
+    showReturnLabels: true,
+    showCollectionPoint: true,
+    showShopeeCalc: true,
   });
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -161,7 +167,11 @@ const App: React.FC = () => {
       case 'accounts-receivable':
         return <AccountsReceivable />;
       case 'shopee-calc':
-        return <ShopeeCalc />;
+        return settings.showShopeeCalc ? <ShopeeCalc /> : <Dashboard settings={settings} />;
+      case 'return-labels':
+        return settings.showReturnLabels ? <ReturnLabels /> : <Dashboard settings={settings} />;
+      case 'collection-point':
+        return settings.showCollectionPoint ? <CollectionPoint /> : <Dashboard settings={settings} />;
       case 'reports':
         return <Reports />;
       case 'user-management':

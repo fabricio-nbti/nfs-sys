@@ -225,6 +225,7 @@ const App: React.FC = () => {
             currentUser={currentUser} 
             companies={MOCK_COMPANIES} 
             setIsMobileOpen={setIsMobileOpen} 
+            handleLogout={handleLogout}
           />
           <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background">
             <div className="container mx-auto px-6 py-8">

@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { MOCK_PRODUCTS, MOCK_COMPANIES, MOCK_CATEGORIES } from '../constants';
+import { MOCK_PRODUCTS, MOCK_COMPANIES, MOCK_CATEGORIES, MOCK_COUPONS } from '../constants';
 import { type Product, type Company, type ReceiptData } from '../types';
-import { PlusCircle, MinusCircle, XCircle, Search, CreditCard, Landmark, QrCode, Printer, X, DollarSign, Image as ImageIcon, ShoppingBag, Trash2 } from 'lucide-react';
+import { PlusCircle, MinusCircle, XCircle, Search, CreditCard, Landmark, QrCode, Printer, X, DollarSign, Image as ImageIcon, ShoppingBag, Trash2, Tag } from 'lucide-react';
 import ReceiptView from './shared/ReceiptView';
 
 interface CartItem extends Product {
@@ -32,10 +32,17 @@ const PDV: React.FC = () => {
   const [installments, setInstallments] = useState<number | null>(null);
   const [amountReceived, setAmountReceived] = useState<number | ''>('');
   const [change, setChange] = useState<number>(0);
+  
+  // Coupon State
+  const [couponCode, setCouponCode] = useState('');
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [couponError, setCouponError] = useState('');
+
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const total = subtotal;
+  const total = Math.max(0, subtotal - discountAmount);
 
   // Filter Products
   const filteredProducts = useMemo(() => {
@@ -76,6 +83,49 @@ const PDV: React.FC = () => {
       setAmountReceived('');
       setChange(0);
   };
+  
+  const handleApplyCoupon = () => {
+      const code = couponCode.toUpperCase().trim();
+      if (!code) return;
+
+      const coupon = MOCK_COUPONS.find(c => c.code === code);
+      
+      if (!coupon) {
+          setCouponError('Cupom inválido');
+          setDiscountAmount(0);
+          setAppliedCoupon(null);
+          return;
+      }
+      
+      if (coupon.status !== 'active') {
+           setCouponError('Cupom inativo');
+           setDiscountAmount(0);
+           setAppliedCoupon(null);
+           return;
+      }
+
+      const discountValue = subtotal * coupon.discount;
+      setDiscountAmount(discountValue);
+      setAppliedCoupon(code);
+      setCouponError('');
+  };
+  
+  const removeCoupon = () => {
+      setCouponCode('');
+      setDiscountAmount(0);
+      setAppliedCoupon(null);
+      setCouponError('');
+  };
+  
+  // Update discount if subtotal changes
+  useEffect(() => {
+      if (appliedCoupon) {
+          const coupon = MOCK_COUPONS.find(c => c.code === appliedCoupon);
+          if (coupon) {
+              setDiscountAmount(subtotal * coupon.discount);
+          }
+      }
+  }, [subtotal, appliedCoupon]);
 
   const handleAmountReceivedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -143,6 +193,7 @@ const PDV: React.FC = () => {
     setInstallments(null);
     setAmountReceived('');
     setChange(0);
+    removeCoupon();
   };
 
   const handlePrint = () => {
@@ -321,12 +372,46 @@ const PDV: React.FC = () => {
 
         {/* Checkout Area */}
         <div className="bg-gray-50 p-4 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+             {/* Coupon Section */}
+             <div className="mb-4">
+                 {appliedCoupon ? (
+                    <div className="flex justify-between items-center bg-green-100 border border-green-200 p-2 rounded-lg">
+                        <span className="text-green-700 text-sm font-semibold flex items-center">
+                            <Tag size={14} className="mr-1" /> Cupom '{appliedCoupon}' aplicado
+                        </span>
+                         <button onClick={removeCoupon} className="text-green-700 hover:text-green-900 p-1">
+                            <X size={14} />
+                        </button>
+                    </div>
+                 ) : (
+                    <div className="flex gap-2">
+                        <input 
+                            type="text" 
+                            placeholder="Código do Cupom" 
+                            value={couponCode}
+                            onChange={(e) => { setCouponCode(e.target.value); setCouponError(''); }}
+                            className="flex-1 p-2 border border-gray-300 rounded-lg text-sm uppercase"
+                        />
+                        <button onClick={handleApplyCoupon} className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 transition-colors">
+                            Aplicar
+                        </button>
+                    </div>
+                 )}
+                 {couponError && <p className="text-red-500 text-xs mt-1 ml-1">{couponError}</p>}
+             </div>
+
              {/* Totals */}
             <div className="space-y-2 mb-4">
                 <div className="flex justify-between text-gray-600 text-sm">
                     <span>Subtotal</span>
                     <span>{formatCurrency(subtotal)}</span>
                 </div>
+                {discountAmount > 0 && (
+                     <div className="flex justify-between text-green-600 text-sm font-semibold">
+                        <span>Desconto</span>
+                        <span>- {formatCurrency(discountAmount)}</span>
+                    </div>
+                )}
                 <div className="flex justify-between items-end border-t border-gray-200 pt-2">
                     <span className="font-bold text-gray-800 text-lg">Total a Pagar</span>
                     <span className="font-extrabold text-3xl text-primary">{formatCurrency(total)}</span>

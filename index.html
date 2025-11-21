@@ -6,12 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NFeSys - Sistema de Gestão Fiscal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        /* Default Indigo-600 in RGB format for Tailwind opacity support */
+        --color-primary: 79 70 229; 
+      }
+    </style>
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              'primary': '#4f46e5',
+              'primary': 'rgb(var(--color-primary) / <alpha-value>)',
               'secondary': '#10b981',
               'background': '#f8fafc',
               'sidebar': '#111827',

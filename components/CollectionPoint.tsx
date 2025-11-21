@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { flushSync } from 'react-dom';
-import { PackageCheck, DollarSign, PackageMinus, History, Plus, Pencil, Trash2, Box, Tag, Scroll, FileDown, Printer } from 'lucide-react';
+import { PackageCheck, DollarSign, PackageMinus, History, Plus, Pencil, Trash2, Box, Tag, Scroll, FileDown, Printer, Save } from 'lucide-react';
 import { DataTable } from './shared/DataTable';
 import Modal from './shared/Modal';
 import { type CollectionPointItem, type CollectionTransaction } from '../types';
@@ -23,10 +23,20 @@ const CollectionPoint: React.FC = () => {
     const [transactions, setTransactions] = useState<CollectionTransaction[]>([]);
     const [activeTab, setActiveTab] = useState<'sales' | 'manage'>('sales');
     
-    // Management Modal State
+    // Management Modal State (For Edits)
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<Partial<CollectionPointItem> | null>(null);
     const [selection, setSelection] = useState<string[]>([]);
+    
+    // New Item Form State
+    const [newItemData, setNewItemData] = useState({
+        name: '',
+        type: 'packaging',
+        size: '',
+        stock: '',
+        cost: '',
+        price: ''
+    });
     
     // Printing State
     const [printableContent, setPrintableContent] = useState<React.ReactNode | null>(null);
@@ -56,15 +66,34 @@ const CollectionPoint: React.FC = () => {
         setTransactions(prev => [newTransaction, ...prev]);
     };
 
-    const handleSaveItem = (e: React.FormEvent) => {
+    const handleAddItem = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newItemData.name) {
+            alert("O nome do item é obrigatório.");
+            return;
+        }
+
+        const newItem: CollectionPointItem = {
+            id: `cp-${Date.now()}`,
+            name: newItemData.name,
+            type: newItemData.type as any,
+            size: newItemData.size,
+            stock: Number(newItemData.stock) || 0,
+            cost: Number(newItemData.cost) || 0,
+            price: Number(newItemData.price) || 0
+        };
+        
+        setItems(prev => [newItem, ...prev]);
+        setNewItemData({ name: '', type: 'packaging', size: '', stock: '', cost: '', price: '' });
+        alert("Item cadastrado com sucesso!");
+    };
+
+    const handleSaveEditItem = (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingItem?.name || !editingItem.type) return;
 
         if (editingItem.id) {
             setItems(prev => prev.map(i => i.id === editingItem.id ? editingItem as CollectionPointItem : i));
-        } else {
-            const newItem = { ...editingItem, id: `cp-${Date.now()}`, stock: editingItem.stock || 0 } as CollectionPointItem;
-            setItems(prev => [...prev, newItem]);
         }
         setIsModalOpen(false);
         setEditingItem(null);
@@ -316,6 +345,90 @@ const CollectionPoint: React.FC = () => {
             {/* TAB: MANAGEMENT */}
             {activeTab === 'manage' && (
                 <div className="no-print">
+                    
+                    {/* New Item Entry Form */}
+                    <div className="bg-white p-6 rounded-lg shadow-md mb-8 border border-gray-100">
+                        <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <Plus size={20} className="mr-2 text-primary"/> Cadastrar Novo Item / Entrada de Estoque
+                        </h2>
+                        <form onSubmit={handleAddItem} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                            <div className="lg:col-span-2">
+                                <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Nome do Item</label>
+                                <input 
+                                    type="text" 
+                                    value={newItemData.name} 
+                                    onChange={e => setNewItemData({...newItemData, name: e.target.value})} 
+                                    className="w-full p-2 border rounded-md" 
+                                    placeholder="Ex: Envelope Plástico" 
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Tipo</label>
+                                <select 
+                                    value={newItemData.type} 
+                                    onChange={e => setNewItemData({...newItemData, type: e.target.value})} 
+                                    className="w-full p-2 border rounded-md bg-white"
+                                >
+                                    <option value="packaging">Embalagem</option>
+                                    <option value="tape">Fita Adesiva</option>
+                                    <option value="label">Etiqueta</option>
+                                    <option value="other">Outro</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Tamanho (Opcional)</label>
+                                <input 
+                                    type="text" 
+                                    value={newItemData.size} 
+                                    onChange={e => setNewItemData({...newItemData, size: e.target.value})} 
+                                    className="w-full p-2 border rounded-md" 
+                                    placeholder="Ex: 20x30"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Quantidade (Estoque)</label>
+                                <input 
+                                    type="number" 
+                                    value={newItemData.stock} 
+                                    onChange={e => setNewItemData({...newItemData, stock: e.target.value})} 
+                                    className="w-full p-2 border rounded-md" 
+                                    placeholder="0" 
+                                    min="0"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Custo Unitário (R$)</label>
+                                <input 
+                                    type="number" 
+                                    step="0.01" 
+                                    value={newItemData.cost} 
+                                    onChange={e => setNewItemData({...newItemData, cost: e.target.value})} 
+                                    className="w-full p-2 border rounded-md" 
+                                    placeholder="0.00" 
+                                    min="0"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Preço Venda (R$)</label>
+                                <input 
+                                    type="number" 
+                                    step="0.01" 
+                                    value={newItemData.price} 
+                                    onChange={e => setNewItemData({...newItemData, price: e.target.value})} 
+                                    className="w-full p-2 border rounded-md" 
+                                    placeholder="0.00" 
+                                    min="0"
+                                />
+                            </div>
+                            <div>
+                                <button type="submit" className="w-full bg-primary text-white py-2 rounded-md hover:bg-indigo-700 transition-colors font-bold shadow-sm flex items-center justify-center">
+                                    <Save size={18} className="mr-2" /> Cadastrar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
                     <div className="flex justify-end mb-4 gap-2">
                         <button onClick={handleExportItemsCSV} className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg flex items-center hover:bg-gray-300 transition-colors" title="Exportar Inventário CSV">
                             <FileDown size={20} className="mr-2"/> Exportar
@@ -332,9 +445,6 @@ const CollectionPoint: React.FC = () => {
                             items
                         )} className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg flex items-center hover:bg-gray-300 transition-colors" title="Imprimir Inventário">
                             <Printer size={20} className="mr-2"/> Imprimir
-                        </button>
-                        <button onClick={() => { setEditingItem({}); setIsModalOpen(true); }} className="bg-primary text-white px-4 py-2 rounded-lg flex items-center hover:bg-indigo-700 transition-colors">
-                            <Plus size={20} className="mr-2"/> Novo Item
                         </button>
                     </div>
                     <DataTable
@@ -359,8 +469,9 @@ const CollectionPoint: React.FC = () => {
                 </div>
             )}
 
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingItem?.id ? 'Editar Item' : 'Novo Item de Insumo'}>
-                <form onSubmit={handleSaveItem} className="space-y-4">
+            {/* Edit Modal */}
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title='Editar Item'>
+                <form onSubmit={handleSaveEditItem} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Nome do Item</label>
                         <input type="text" value={editingItem?.name || ''} onChange={e => setEditingItem(prev => ({...prev, name: e.target.value}))} className="w-full p-2 border rounded mt-1" required placeholder="Ex: Envelope P"/>

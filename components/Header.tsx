@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Building, Menu, Search, Bell, ChevronDown, User as UserIcon, Settings, LogOut, X, Check } from 'lucide-react';
+import { Building, Menu, Search, Bell, ChevronDown, User as UserIcon, Settings, LogOut, Palette, Check } from 'lucide-react';
 import { type User, type Company } from '../types';
 
 interface HeaderProps {
@@ -10,10 +10,22 @@ interface HeaderProps {
   handleLogout?: () => void;
 }
 
+const THEMES = [
+  { name: 'Indigo', rgb: '79 70 229', hex: '#4f46e5' },
+  { name: 'Emerald', rgb: '16 185 129', hex: '#10b981' },
+  { name: 'Blue', rgb: '59 130 246', hex: '#3b82f6' },
+  { name: 'Rose', rgb: '225 29 72', hex: '#e11d48' },
+  { name: 'Amber', rgb: '217 119 6', hex: '#d97706' },
+  { name: 'Violet', rgb: '124 58 237', hex: '#7c3aed' },
+  { name: 'Cyan', rgb: '6 182 212', hex: '#06b6d4' },
+  { name: 'Slate', rgb: '71 85 105', hex: '#475569' },
+];
+
 const Header: React.FC<HeaderProps> = ({ currentUser, companies, setIsMobileOpen, handleLogout }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [activeTheme, setActiveTheme] = useState(THEMES[0].rgb);
   
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notifMenuRef = useRef<HTMLDivElement>(null);
@@ -38,6 +50,11 @@ const Header: React.FC<HeaderProps> = ({ currentUser, companies, setIsMobileOpen
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleThemeChange = (rgb: string) => {
+    setActiveTheme(rgb);
+    document.documentElement.style.setProperty('--color-primary', rgb);
+  };
 
   const companyName = companies.find(c => c.id === currentUser.companyId)?.name || 'Empresa Padrão';
 
@@ -160,11 +177,34 @@ const Header: React.FC<HeaderProps> = ({ currentUser, companies, setIsMobileOpen
 
             {/* User Dropdown */}
             {showUserMenu && (
-                <div className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-fade-in">
+                <div className="absolute right-0 mt-3 w-72 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-fade-in">
                     <div className="p-4 border-b border-gray-100 bg-gray-50">
                         <p className="font-bold text-gray-800">{currentUser.name}</p>
                         <p className="text-xs text-gray-500 truncate">{currentUser.email}</p>
                     </div>
+                    
+                    <div className="p-4 border-b border-gray-100">
+                        <div className="flex items-center gap-2 mb-3">
+                            <Palette size={16} className="text-gray-500" />
+                            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tema do Sistema</span>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                            {THEMES.map((theme) => (
+                                <button
+                                    key={theme.name}
+                                    onClick={() => handleThemeChange(theme.rgb)}
+                                    className="w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110 focus:outline-none relative"
+                                    style={{ backgroundColor: theme.hex }}
+                                    title={theme.name}
+                                >
+                                    {activeTheme === theme.rgb && (
+                                        <Check size={14} className="text-white stroke-[3]" />
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     <div className="py-2">
                         <button className="w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary flex items-center transition-colors">
                             <UserIcon size={16} className="mr-3" />
